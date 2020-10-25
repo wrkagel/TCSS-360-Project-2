@@ -4,8 +4,20 @@ import org.junit.jupiter.api.BeforeAll;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/*
+TCSS 360 Project #2
+Group 8
+RJ Alabado, Walter Kagel, Taehong Kim
+ */
+
+/**
+ * Tests the register class.
+ */
 class RegisterTest {
 
+    /**
+     * Makes a register to be tested.
+     */
     private Register reg = new Register();
 
     @org.junit.jupiter.api.Test
