@@ -39,7 +39,7 @@ public class ALU {
      * @return (short) (value1 + value2)
      */
     public short add(short value1, short value2) {
-
+        return 0; //Placeholder return
     }
 
     /**
@@ -48,6 +48,6 @@ public class ALU {
      * @return rotated value as a short
      */
     public short rotateRight(short value){
-
+        return 0; //Placeholder return
     }
 }

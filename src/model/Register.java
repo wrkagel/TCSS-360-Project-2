@@ -39,8 +39,7 @@ public class Register {
      * @return value as short
      */
     public short getShort() {
-        short value = (short) ((mostSigByte << 4) + leastSigByte);
-        return value;
+        return (short) ((mostSigByte << 8) | (leastSigByte & 0xFF));
     }
 
     /**
@@ -61,7 +60,7 @@ public class Register {
      * @param value short value to set register to
      */
     public void setShort(short value) {
-        mostSigByte = (byte) (value >>> 4);
-        leastSigByte = (byte) (value & 0xF);
+        mostSigByte = (byte) ((value & 0xFF00) >>> 8);
+        leastSigByte = (byte) (value & 0xFF);
     }
 }
