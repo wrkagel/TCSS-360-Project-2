@@ -9,6 +9,8 @@ RJ Alabado, Walter Kagel, Taehong Kim
 /**
  * Model of a simple pep/8 register. It holds two byte values and has getter and setter methods for both
  * byte and short.
+ * @author Group 8, Lead: Walter Kagel
+ * @version 10/25/2020
  */
 public class Register {
 

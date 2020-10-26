@@ -10,7 +10,7 @@ RJ Alabado, Walter Kagel, Taehong Kim
  * Interface that allows the GUI to send messages to the listener which will then interpret those messages and run
  * the appropriate methods.
  * These are split into multiple methods to allow for better division of the code.
- * @author Group 8, Walter Kagel
+ * @author Group 8, Lead: Walter Kagel
  * @version 10/25/2020
  */
 public interface ViewListener {

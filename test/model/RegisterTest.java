@@ -12,6 +12,8 @@ RJ Alabado, Walter Kagel, Taehong Kim
 
 /**
  * Tests the register class.
+ * @author Group8, Lead: Walter Kagel
+ * @version 10/26/2020
  */
 class RegisterTest {
 
