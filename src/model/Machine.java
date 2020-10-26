@@ -19,12 +19,12 @@ public class Machine {
     /**
      * The CPU of the simulated machine.
      */
-    private CPU myCPU;
+    private CPU cpu;
 
     /**
      * The memory of the simulated machine.
      */
-    private Memory myMem;
+    private Memory mem;
 
     /**
      * Holds the listener that will be notified when an update occurs to the stored values in the Machine.
@@ -32,16 +32,34 @@ public class Machine {
     private ModelListener listener;
 
     /**
+     * Determines if the machine runs instructions until a STOP instruction is hit or if one
+     * instruction is completed and then returns.
+     */
+    private final boolean isStep;
+
+    /**
      * Creates a new machine with a new CPU and Memory.
      */
     public Machine() {
-        myCPU = new CPU();
-        myMem = new Memory();
+        cpu = new CPU();
+        mem = new Memory();
+        isStep = false;
+    }
+
+    /**
+     * Runs executions either once if isStep is true or until the fetchExecute method of the cpu
+     * returns true, which indicates that a STOP instruction has been reached.
+     */
+    public void run() {
+        boolean stop;
+        do {
+            stop = cpu.fetchExecute(mem);
+        } while (!(stop || isStep));
     }
 
     /**
      * Adds a listener to the Model.
-     * @param listener
+     * @param listener object that implements the ModelListener interface.
      */
     public void addListener(ModelListener listener) {
         this.listener = listener;
@@ -61,9 +79,9 @@ public class Machine {
             listener.errorMessage("Attempt to set memory outside of valid addresses.");
         }
         for (int i =0; i < values.length; i++) {
-            myMem.storeByte((short) (startAddress + i), values[i]);
+            mem.storeByte((short) (startAddress + i), values[i]);
         }
-
+        listener.memoryUpdate(startAddress, values);
     }
 
 }
