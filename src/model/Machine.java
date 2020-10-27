@@ -41,8 +41,8 @@ public class Machine {
      * Creates a new machine with a new CPU and Memory.
      */
     public Machine() {
-        cpu = new CPU();
         mem = new Memory();
+        cpu = new CPU(mem);
         isStep = false;
     }
 
@@ -53,7 +53,7 @@ public class Machine {
     public void run() {
         boolean stop;
         do {
-            stop = cpu.fetchExecute(mem);
+            stop = cpu.fetchExecute();
         } while (!(stop || isStep));
     }
 
@@ -63,6 +63,7 @@ public class Machine {
      */
     public void addListener(ModelListener listener) {
         this.listener = listener;
+        cpu.addListener(listener);
     }
 
     /**

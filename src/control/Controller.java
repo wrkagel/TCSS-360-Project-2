@@ -13,6 +13,7 @@ import view.GUI;
 /**
  * Controls all communication and updating between the model and view packages. Updates the view when a change
  * in model has occurred. Calls appropriate functions upon a user action on the view.
+ *
  */
 public class Controller implements ModelListener, ViewListener {
 

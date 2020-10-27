@@ -12,7 +12,7 @@ import control.ModelListener;
  * Processes the instructions stored in memory by performing the fetch-execute cycle for a single instruction.
  * Contains all pep/8 internal registers.
  * @author Group 8, Lead: Walter Kagel
- * @version 10/25/2020
+ * @version 10/26/2020
  */
 public class CPU {
 
@@ -84,7 +84,15 @@ public class CPU {
      */
     private ModelListener listener;
 
-    public CPU(){
+    /**
+     * Used to give the CPU access to memory for reading instructions, loading, and storing.
+     */
+    private Memory mem;
+
+    /**
+     * Create the cpu with its ALU, registers, and flags.
+     */
+    public CPU(Memory mem){
         alu = new ALU();
         accumulator = new Register();
         index = new Register();
@@ -110,10 +118,9 @@ public class CPU {
     /**
      * Performs one iteration of the fetch execute cycle. Uses the instruction specifier to call an appropriate
      * method. Returns true if the STOP instruction is encountered.
-     * @param mem the memory that the cpu will fetch instructions from and read and write data to.
      * @return true if instruction read was STOP, false otherwise.
      */
-    public boolean fetchExecute(Memory mem) {
+    public boolean fetchExecute() {
         short instructionAddress = programCounter.getShort();
         instructionSpecifier.setByte(false, mem.loadByte(instructionAddress));
         programCounter.setShort((short) (instructionAddress + 1));
@@ -155,12 +162,23 @@ public class CPU {
     }
 
     private void moveSPtoAcc() {
+        short value = stackPointer.getShort();
+        accumulator.setShort(value);
+        listener.registerUpdate("accumulator", value);
     }
 
     private void moveFlagstoAcc() {
+        short value = 0;
+        if (negativeFlag) value += 8;
+        if (zeroFlag) value += 4;
+        if (overflowFlag) value+= 2;
+        if (carryFlag) value += 1;
+        accumulator.setShort(value);
+        listener.registerUpdate("accumulator", value);
     }
 
     private void branch() {
+
     }
 
     private void callSubroutine() {
@@ -196,5 +214,43 @@ public class CPU {
         listener.registerUpdate("operandSpecifier", null);
         listener.registerUpdate("operand", null);
         return true;
+    }
+
+    private short getOperandAddress(AddressingMode mode) {
+        short address = 0;
+        switch(mode) {
+            case I -> {
+                listener.errorMessage("Immediate Mode does not require addressing. Error in code.");
+                return address;
+            }
+            case D -> address = operandSpecifier.getShort();
+            case N -> {
+                byte mostSig = mem.loadByte(operandSpecifier.getShort());
+                byte leastSig = mem.loadByte((short) (operandSpecifier.getShort() + 1));
+                address = (short) ((mostSig << 8) | (leastSig & 0xFF));
+            }
+            case S -> address = (short) (stackPointer.getShort() + operandSpecifier.getShort());
+            case SF -> {
+                address = (short) (stackPointer.getShort() + operandSpecifier.getShort());
+                byte mostSig = mem.loadByte(address);
+                byte leastSig = mem.loadByte((short) (address + 1));
+                address = (short) ((mostSig << 8) | (leastSig & 0xFF));
+            }
+            case X -> address = (short) (operandSpecifier.getShort() + index.getShort());
+            case SX -> {
+                address = (short) (operandSpecifier.getShort() + index.getShort());
+                byte mostSig = mem.loadByte(address);
+                byte leastSig = mem.loadByte((short) (address + 1));
+                address = (short) ((mostSig << 8) | (leastSig & 0xFF));
+            }
+            case SXF -> {
+                address = (short) (stackPointer.getShort() + operandSpecifier.getShort());
+                byte mostSig = mem.loadByte(address);
+                byte leastSig = mem.loadByte((short) (address + 1));
+                address = (short) ((mostSig << 8) | (leastSig & 0xFF));
+                address = (short) (address + index.getShort());
+            }
+        }
+        return address;
     }
 }
