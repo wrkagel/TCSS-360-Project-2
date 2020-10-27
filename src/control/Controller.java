@@ -36,7 +36,12 @@ public class Controller implements ModelListener, ViewListener {
     }
 
     @Override
-    public void registerUpdate(String name, short value) {
+    public void registerUpdate(String name, Short value) {
+
+    }
+
+    @Override
+    public void flagUpdate(String name, boolean value) {
 
     }
 

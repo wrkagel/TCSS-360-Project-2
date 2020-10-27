@@ -19,63 +19,65 @@ public class CPU {
     /**
      * The arithmetic and logic unit for the cpu.
      */
-    private ALU alu;
+    private final ALU alu;
 
     /**
      * Used as the pep/8 accumulator register.
      */
-    private Register accumulator;
+    private final Register accumulator;
 
     /**
      * Used as the pep/8 index register.
      */
-    private Register index;
+    private final Register index;
 
     /**
      * Used as the pep/8 stack pointer.
      */
-    private Register stackPointer;
+    private final Register stackPointer;
 
     /**
      * Used as the pep/8 program counter;
      */
-    private Register programCounter;
+    private final Register programCounter;
 
     /**
      * Used to store the instruction specifier for an instruction.
+     * Uses only the least significant byte of the register as the instruction specifier is
+     * only 8 bits.
      */
-    private Register instructionSpecifier;
+    private final Register instructionSpecifier;
 
     /**
      * Used to store the operand specifier for an instruction.
      */
-    private Register operandSpecifier;
+    private final Register operandSpecifier;
 
     /**
      * Used to store the operand for the instruction. Could be the operand specifier if the instrucion
      * specifier indicates immediate addressing.
      */
-    private Register operand;
+    private final Register operand;
 
     /**
      * Stores the value that the most recent instruction that can set the negative flag has set it to.
      */
-    private boolean negativeFlag;
+    private final boolean negativeFlag;
 
     /**
      * Stores the value that the most recent instruction that can set the zero flag has set it to.
      */
-    private boolean zeroFlag;
+    private final boolean zeroFlag;
 
     /**
      * Stores the value that the most recent instruction that can set the overflow flag has set it to.
      */
-    private boolean overflowFlag;
+    private final boolean overflowFlag;
 
     /**
      * Stores the value that the most recent instruction that can set the carry flag has set it to.
      */
-    private boolean carryFlag;
+    private final boolean carryFlag;
 
     /**
      * The cpu informs the listener when an update occurs to a stored value.
@@ -106,12 +108,93 @@ public class CPU {
     }
 
     /**
-     * Performs one iteration of the fetch execute cycle.
+     * Performs one iteration of the fetch execute cycle. Uses the instruction specifier to call an appropriate
+     * method. Returns true if the STOP instruction is encountered.
      * @param mem the memory that the cpu will fetch instructions from and read and write data to.
      * @return true if instruction read was STOP, false otherwise.
      */
     public boolean fetchExecute(Memory mem) {
-        return true;
+        short instructionAddress = programCounter.getShort();
+        instructionSpecifier.setByte(false, mem.loadByte(instructionAddress));
+        programCounter.setShort((short) (instructionAddress + 1));
+        short instSpec = instructionSpecifier.getShort();
+        if(instSpec == 0) {
+            return stopInstruction();
+        } else if (instSpec == 1){
+            //returnFromTrap();
+        } else if (instSpec == 2) {
+            moveSPtoAcc();
+        } else if (instSpec == 3) {
+            moveFlagstoAcc();
+        } else if (instSpec < 22) {
+            branch();
+        } else if (instSpec < 24) {
+            callSubroutine();
+        } else if (instSpec < 36) {
+            unaryALUop();
+        } else if (instSpec < 48) {
+            //no operation trap calls
+        } else if (instSpec < 64) {
+            decimalIO();
+        } else if (instSpec < 72) {
+            stringOut();
+        } else if (instSpec < 88) {
+            charIO();
+        } else if (instSpec < 96) {
+            returnFromCall();
+        } else if (instSpec < 192) {
+            binaryALUop();
+        } else if (instSpec < 224) {
+            load();
+        } else if (instSpec < 256) {
+            store();
+        } else {
+            listener.errorMessage("No valid opCode found. This message should never be reached.");
+        }
+        return false;
     }
 
+    private void moveSPtoAcc() {
+    }
+
+    private void moveFlagstoAcc() {
+    }
+
+    private void branch() {
+    }
+
+    private void callSubroutine() {
+    }
+
+    private void unaryALUop() {
+    }
+
+    private void decimalIO() {
+    }
+
+    private void stringOut() {
+    }
+
+    private void charIO() {
+    }
+
+    private void returnFromCall() {
+    }
+
+    private void binaryALUop() {
+    }
+
+    private void load() {
+    }
+
+    private void store() {
+    }
+
+    private boolean stopInstruction() {
+        listener.registerUpdate("programCounter", programCounter.getShort());
+        listener.registerUpdate("instructionSpecifier", instructionSpecifier.getShort());
+        listener.registerUpdate("operandSpecifier", null);
+        listener.registerUpdate("operand", null);
+        return true;
+    }
 }
