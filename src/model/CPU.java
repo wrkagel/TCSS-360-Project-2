@@ -12,7 +12,7 @@ import control.ModelListener;
  * Processes the instructions stored in memory by performing the fetch-execute cycle for a single instruction.
  * Contains all pep/8 internal registers.
  * @author Group 8, Lead: Walter Kagel
- * @version 10/26/2020
+ * @version 10/27/2020
  */
 public class CPU {
 
@@ -105,6 +105,7 @@ public class CPU {
         zeroFlag = true;
         overflowFlag = false;
         carryFlag = false;
+        listener = null;
     }
 
     /**
@@ -122,11 +123,12 @@ public class CPU {
      */
     public boolean fetchExecute() {
         short instructionAddress = programCounter.getShort();
-        instructionSpecifier.setByte(false, mem.loadByte(instructionAddress));
+        instructionSpecifier.setByte(false, mem.getByte(instructionAddress));
         programCounter.setShort((short) (instructionAddress + 1));
-        short instSpec = instructionSpecifier.getShort();
+        int instSpec = Short.toUnsignedInt(instructionSpecifier.getShort());
         if(instSpec == 0) {
-            return stopInstruction();
+            stopInstruction();
+            return true;
         } else if (instSpec == 1){
             //returnFromTrap();
         } else if (instSpec == 2) {
@@ -156,17 +158,41 @@ public class CPU {
         } else if (instSpec < 256) {
             store();
         } else {
-            listener.errorMessage("No valid opCode found. This message should never be reached.");
+            if (listener != null) {
+                listener.errorMessage("No valid opCode found. This message should never be reached.");
+            }
         }
         return false;
     }
 
+    /**
+     * Informs the listener of the register updates of a stop instruction and then returns true.
+     */
+    private void stopInstruction() {
+        if (listener == null) return;
+        listener.registerUpdate("programCounter", programCounter.getShort());
+        listener.registerUpdate("instructionSpecifier", instructionSpecifier.getShort());
+        listener.registerUpdate("operandSpecifier", null);
+        listener.registerUpdate("operand", null);
+    }
+
+    /**
+     * Moves the stack pointer into the accumulator.
+     */
     private void moveSPtoAcc() {
         short value = stackPointer.getShort();
         accumulator.setShort(value);
+        if(listener == null) return;
         listener.registerUpdate("accumulator", value);
+        listener.registerUpdate("programCounter", programCounter.getShort());
+        listener.registerUpdate("instructionSpecifier", instructionSpecifier.getShort());
+        listener.registerUpdate("operandSpecifier", null);
+        listener.registerUpdate("operand", null);
     }
 
+    /**
+     * Moves the nzvc flags into the accumulator with bits [0:11] being filled with zeroes.
+     */
     private void moveFlagstoAcc() {
         short value = 0;
         if (negativeFlag) value += 8;
@@ -174,83 +200,144 @@ public class CPU {
         if (overflowFlag) value+= 2;
         if (carryFlag) value += 1;
         accumulator.setShort(value);
+        if (listener == null) return;
         listener.registerUpdate("accumulator", value);
-    }
-
-    private void branch() {
-
-    }
-
-    private void callSubroutine() {
-    }
-
-    private void unaryALUop() {
-    }
-
-    private void decimalIO() {
-    }
-
-    private void stringOut() {
-    }
-
-    private void charIO() {
-    }
-
-    private void returnFromCall() {
-    }
-
-    private void binaryALUop() {
-    }
-
-    private void load() {
-    }
-
-    private void store() {
-    }
-
-    private boolean stopInstruction() {
         listener.registerUpdate("programCounter", programCounter.getShort());
         listener.registerUpdate("instructionSpecifier", instructionSpecifier.getShort());
         listener.registerUpdate("operandSpecifier", null);
         listener.registerUpdate("operand", null);
-        return true;
+    }
+
+    /**
+     * Checks if branch condition specified by the instruction is met and then branches if it is.
+     */
+    private void branch() {
+        boolean shouldBranch = false;
+        int instSpec = Short.toUnsignedInt(instructionSpecifier.getShort());
+        short opSpec = mem.getShort(programCounter.getShort());
+        operandSpecifier.setShort(opSpec);
+        programCounter.setShort((short) (programCounter.getShort() + 2));
+        if (instSpec < 6) {
+            shouldBranch = true;
+        } else if (instSpec < 8) {
+            shouldBranch = negativeFlag || zeroFlag;
+        } else if (instSpec < 10) {
+            shouldBranch = negativeFlag;
+        } else if (instSpec < 12) {
+            shouldBranch = zeroFlag;
+        } else if (instSpec < 14) {
+            shouldBranch = !zeroFlag;
+        } else if (instSpec < 16) {
+            shouldBranch = !negativeFlag;
+        } else if (instSpec < 18) {
+            shouldBranch = !(negativeFlag && zeroFlag);
+        } else if (instSpec < 20) {
+            shouldBranch = overflowFlag;
+        } else if (instSpec < 22) {
+            shouldBranch = carryFlag;
+        } else {
+            listener.errorMessage("Incorrectly went into branch function.");
+            return;
+        }
+        short oper;
+        if (shouldBranch) {
+            if ((instSpec & 0x1) == 1) {
+                oper = mem.getShort(getOperandAddress(AddressingMode.X));
+            } else {
+                oper = opSpec;
+            }
+            programCounter.setShort(oper);
+        }
+        if (listener == null) return;
+        listener.registerUpdate("programCounter", programCounter.getShort());
+        listener.registerUpdate("instructionSpecifier", instructionSpecifier.getShort());
+        listener.registerUpdate("operandSpecifier", operandSpecifier.getShort());
+        listener.registerUpdate("operand", operand.getShort());
+    }
+
+    /**
+     * Calls a subroutine. Currently unimplemented.
+     */
+    private void callSubroutine() {
+    }
+
+    /**
+     * Performs an ALU operation that only has one input.
+     */
+    private void unaryALUop() {
+    }
+
+    /**
+     * Performs an input or output operation on a decimal value.
+     */
+    private void decimalIO() {
+    }
+
+    /**
+     * Outputs a null terminated string based with the first character at the starting address
+     * indicated by the operand.
+     */
+    private void stringOut() {
+    }
+
+    /**
+     * Performs input or output of a single character.
+     */
+    private void charIO() {
+    }
+
+    /**
+     * Returns from a call.
+     */
+    private void returnFromCall() {
+    }
+
+    /**
+     * Performs an ALU operation with two inputs.
+     */
+    private void binaryALUop() {
+    }
+
+    /**
+     * Loads a short or byte into the accumulator or index.
+     */
+    private void load() {
+    }
+
+    /**
+     * Stores a short or byte from the accumulator or index into a memory address.
+     */
+    private void store() {
     }
 
     private short getOperandAddress(AddressingMode mode) {
-        short address = 0;
+        short address = operandSpecifier.getShort();
         switch(mode) {
             case I -> {
                 listener.errorMessage("Immediate Mode does not require addressing. Error in code.");
                 return address;
             }
-            case D -> address = operandSpecifier.getShort();
             case N -> {
-                byte mostSig = mem.loadByte(operandSpecifier.getShort());
-                byte leastSig = mem.loadByte((short) (operandSpecifier.getShort() + 1));
-                address = (short) ((mostSig << 8) | (leastSig & 0xFF));
+                address = mem.getShort(address);
             }
             case S -> address = (short) (stackPointer.getShort() + operandSpecifier.getShort());
             case SF -> {
                 address = (short) (stackPointer.getShort() + operandSpecifier.getShort());
-                byte mostSig = mem.loadByte(address);
-                byte leastSig = mem.loadByte((short) (address + 1));
-                address = (short) ((mostSig << 8) | (leastSig & 0xFF));
+                address = mem.getShort(address);
             }
             case X -> address = (short) (operandSpecifier.getShort() + index.getShort());
             case SX -> {
                 address = (short) (operandSpecifier.getShort() + index.getShort());
-                byte mostSig = mem.loadByte(address);
-                byte leastSig = mem.loadByte((short) (address + 1));
-                address = (short) ((mostSig << 8) | (leastSig & 0xFF));
+                address = mem.getShort(address);
             }
             case SXF -> {
                 address = (short) (stackPointer.getShort() + operandSpecifier.getShort());
-                byte mostSig = mem.loadByte(address);
-                byte leastSig = mem.loadByte((short) (address + 1));
-                address = (short) ((mostSig << 8) | (leastSig & 0xFF));
+                address = mem.getShort(address);
                 address = (short) (address + index.getShort());
             }
+            case D -> {}
         }
         return address;
     }
+
 }

@@ -80,7 +80,7 @@ public class Machine {
             listener.errorMessage("Attempt to set memory outside of valid addresses.");
         }
         for (int i =0; i < values.length; i++) {
-            mem.storeByte((short) (startAddress + i), values[i]);
+            mem.setByte((short) (startAddress + i), values[i]);
         }
         listener.memoryUpdate(startAddress, values);
     }
