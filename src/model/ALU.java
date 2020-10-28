@@ -10,7 +10,7 @@ RJ Alabado, Walter Kagel, Taehong Kim
  * Executes all arithmetic operations for arithmetic instructions for the pep/8 simulator.
  * Stores flags based on the most recent operation.
  * @author Group 8, Lead: RJ Alabado
- * @version 10/25/2020
+ * @version 10/26/2020
  */
 public class ALU {
 
@@ -39,7 +39,7 @@ public class ALU {
      * @return (short) (value1 + value2)
      */
     public short add(short value1, short value2) {
-
+        return 0; //Placeholder return
     }
 
     /**
@@ -48,6 +48,6 @@ public class ALU {
      * @return rotated value as a short
      */
     public short rotateRight(short value){
-
+        return 0; //Placeholder return
     }
 }

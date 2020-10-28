@@ -26,7 +26,14 @@ public interface ModelListener {
      * @param name name of register
      * @param value value of register
      */
-    void registerUpdate(String name, short value);
+    void registerUpdate(String name, Short value);
+
+    /**
+     * Update the flag named with the given value.
+     * @param name of the flag to be updated.
+     * @param value if the flag is set true, false otherwise.
+     */
+    void flagUpdate(String name, boolean value);
 
     /**
      * Informs the listener of changes in memory.
