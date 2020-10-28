@@ -10,7 +10,7 @@ RJ Alabado, Walter Kagel, Taehong Kim
  * Interface that allows the GUI to send messages to the listener which will then interpret those messages and run
  * the appropriate methods.
  * These are split into multiple methods to allow for better division of the code.
- * @author Group 8, Walter Kagel
+ * @author Group 8, Lead: Walter Kagel
  * @version 10/25/2020
  */
 public interface ViewListener {
@@ -32,8 +32,19 @@ public interface ViewListener {
      * @param name name of selection
      */
     void buildSelection(String name);
-
     /*
     This will be the same pattern for all other interactions. To be completed later.
      */
+
+    /**
+     * Sends the name of the selection chosen from the edit menu bar item to the controller.
+     * @param name name of selection
+     */
+    void editSelection(String name);
+
+    /**
+     * Sends the name of the selection chosen from the cpu trace selection to the controller.
+     * @param name name of selection
+     */
+    void traceSelection(String name);
 }
