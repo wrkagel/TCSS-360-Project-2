@@ -12,7 +12,7 @@ import control.ModelListener;
  * Processes the instructions stored in memory by performing the fetch-execute cycle for a single instruction.
  * Contains all pep/8 internal registers.
  * @author Group 8, Lead: Walter Kagel
- * @version 10/27/2020
+ * @version 10/28/2020
  */
 public class CPU {
 
@@ -62,12 +62,12 @@ public class CPU {
     /**
      * Stores the value that the most recent instruction that can set the negative flag has set it to.
      */
-    private final boolean negativeFlag;
+    private boolean negativeFlag;
 
     /**
      * Stores the value that the most recent instruction that can set the zero flag has set it to.
      */
-    private final boolean zeroFlag;
+    private boolean zeroFlag;
 
     /**
      * Stores the value that the most recent instruction that can set the overflow flag has set it to.
@@ -90,6 +90,12 @@ public class CPU {
     private Memory mem;
 
     /**
+     * Sets if the CPU updates the listener after every instruction or only after a stop instruction.
+     * Added to increase efficiency.
+     */
+    private boolean isTrace;
+
+    /**
      * Create the cpu with its ALU, registers, and flags.
      */
     public CPU(Memory mem){
@@ -106,6 +112,8 @@ public class CPU {
         overflowFlag = false;
         carryFlag = false;
         listener = null;
+        isTrace = false;
+        this.mem = mem;
     }
 
     /**
@@ -121,7 +129,8 @@ public class CPU {
      * method. Returns true if the STOP instruction is encountered.
      * @return true if instruction read was STOP, false otherwise.
      */
-    public boolean fetchExecute() {
+    public boolean fetchExecute(boolean isTrace) {
+        this.isTrace = isTrace;
         short instructionAddress = programCounter.getShort();
         instructionSpecifier.setByte(false, mem.getByte(instructionAddress));
         programCounter.setShort((short) (instructionAddress + 1));
@@ -182,7 +191,7 @@ public class CPU {
     private void moveSPtoAcc() {
         short value = stackPointer.getShort();
         accumulator.setShort(value);
-        if(listener == null) return;
+        if(listener == null || !isTrace) return;
         listener.registerUpdate("accumulator", value);
         listener.registerUpdate("programCounter", programCounter.getShort());
         listener.registerUpdate("instructionSpecifier", instructionSpecifier.getShort());
@@ -200,7 +209,7 @@ public class CPU {
         if (overflowFlag) value+= 2;
         if (carryFlag) value += 1;
         accumulator.setShort(value);
-        if (listener == null) return;
+        if (listener == null || !isTrace) return;
         listener.registerUpdate("accumulator", value);
         listener.registerUpdate("programCounter", programCounter.getShort());
         listener.registerUpdate("instructionSpecifier", instructionSpecifier.getShort());
@@ -212,7 +221,7 @@ public class CPU {
      * Checks if branch condition specified by the instruction is met and then branches if it is.
      */
     private void branch() {
-        boolean shouldBranch = false;
+        boolean shouldBranch;
         int instSpec = Short.toUnsignedInt(instructionSpecifier.getShort());
         short opSpec = mem.getShort(programCounter.getShort());
         operandSpecifier.setShort(opSpec);
@@ -248,7 +257,7 @@ public class CPU {
             }
             programCounter.setShort(oper);
         }
-        if (listener == null) return;
+        if (listener == null || !isTrace) return;
         listener.registerUpdate("programCounter", programCounter.getShort());
         listener.registerUpdate("instructionSpecifier", instructionSpecifier.getShort());
         listener.registerUpdate("operandSpecifier", operandSpecifier.getShort());
@@ -302,12 +311,98 @@ public class CPU {
      * Loads a short or byte into the accumulator or index.
      */
     private void load() {
+        operandSpecifier.setShort(mem.getShort(programCounter.getShort()));
+        programCounter.setShort((short) (programCounter.getShort() + 2));
+        int opCode = instructionSpecifier.getByte(false) >>> 4;
+        int regAndMode = instructionSpecifier.getByte(false) & 0xF;
+        int isByte = opCode & 0x1;
+        int reg = regAndMode >>> 3;
+        int mode = regAndMode & 0x7;
+        if (isByte == 0) {
+            if (mode == 0) {
+                operand.setShort(operandSpecifier.getShort());
+            } else {
+                operand.setShort(mem.getShort(getOperandAddress(AddressingMode.values()[mode])));
+            }
+            if (reg == 0) {
+                accumulator.setShort(operand.getShort());
+            } else {
+                index.setShort(operand.getShort());
+            }
+        } else {
+            operand.setByte(true, (byte) 0);
+            if (mode == 0) {
+                operand.setByte(false, operandSpecifier.getByte(false));
+            } else {
+                operand.setByte(false, mem.getByte(getOperandAddress(AddressingMode.values()[mode])));
+            }
+            if (reg == 0) {
+                accumulator.setByte(false, operand.getByte(false));
+            } else {
+                index.setByte(false, operand.getByte(false));
+            }
+        }
+        if(operand.getShort() < 0) {
+            negativeFlag = true;
+        } else {
+            negativeFlag = false;
+        }
+        if (operand.getShort() == 0) {
+            zeroFlag = true;
+        } else {
+            zeroFlag = false;
+        }
+        if (listener == null || !isTrace) return;
+        listener.registerUpdate("programCounter", programCounter.getShort());
+        listener.registerUpdate("instructionSpecifier", instructionSpecifier.getShort());
+        listener.registerUpdate("operandSpecifier", operandSpecifier.getShort());
+        listener.registerUpdate("operand", operand.getShort());
+        listener.registerUpdate("accumulator", accumulator.getShort());
+        listener.registerUpdate("index", index.getShort());
+        listener.flagUpdate("negativeFlag", negativeFlag);
+        listener.flagUpdate("zeroFlag", zeroFlag);
     }
 
     /**
      * Stores a short or byte from the accumulator or index into a memory address.
      */
     private void store() {
+        operandSpecifier.setShort(mem.getShort(programCounter.getShort()));
+        programCounter.setShort((short) (programCounter.getShort() + 2));
+        int opCode = instructionSpecifier.getByte(false) >>> 4;
+        int regAndMode = instructionSpecifier.getByte(false) & 0xF;
+        int isByte = opCode & 0x1;
+        int reg = regAndMode >>> 3;
+        int mode = regAndMode & 0x7;
+        short address;
+        if (mode == 0) throw new IllegalArgumentException("Illegal addressing mode for store instruction.");
+        address = getOperandAddress(AddressingMode.values()[mode]);
+        if (isByte == 0) {
+            if (reg == 0) {
+                operand.setShort(accumulator.getShort());
+            } else {
+                operand.setShort(index.getShort());
+            }
+            mem.setShort(address, operand.getShort());
+        } else {
+            operand.setByte(true, (byte) 0);
+            if (reg == 0) {
+                operand.setByte(false, accumulator.getByte(false));
+            } else {
+                operand.setByte(false, index.getByte(false));
+            }
+            mem.setByte(address, operand.getByte(false));
+        }
+        if (listener == null || !isTrace) return;
+        listener.registerUpdate("programCounter", programCounter.getShort());
+        listener.registerUpdate("instructionSpecifier", instructionSpecifier.getShort());
+        listener.registerUpdate("operandSpecifier", operandSpecifier.getShort());
+        listener.registerUpdate("operand", operand.getShort());
+        if (isByte == 0) {
+            listener.memoryUpdate(address, new byte[] {mem.getByte(address), mem.getByte((short) (address + 1))});
+        } else {
+            listener.memoryUpdate(address, mem.getByte(address));
+        }
     }
 
     private short getOperandAddress(AddressingMode mode) {
@@ -317,9 +412,7 @@ public class CPU {
                 listener.errorMessage("Immediate Mode does not require addressing. Error in code.");
                 return address;
             }
-            case N -> {
-                address = mem.getShort(address);
-            }
+            case N -> address = mem.getShort(address);
             case S -> address = (short) (stackPointer.getShort() + operandSpecifier.getShort());
             case SF -> {
                 address = (short) (stackPointer.getShort() + operandSpecifier.getShort());

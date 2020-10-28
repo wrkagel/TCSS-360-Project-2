@@ -12,7 +12,7 @@ import control.ModelListener;
  * Holds all of the parts necessary for the pep/8 machine to run. CPU, Memory, and input buffer
  * as well as a listener that it informs when stored values are updated.
  * @author Group 8, Lead: Walter Kagel
- * @version 10/26/2020
+ * @version 10/28/2020
  */
 public class Machine {
 
@@ -53,7 +53,7 @@ public class Machine {
     public void run() {
         boolean stop;
         do {
-            stop = cpu.fetchExecute();
+            stop = cpu.fetchExecute(isStep);
         } while (!(stop || isStep));
     }
 
