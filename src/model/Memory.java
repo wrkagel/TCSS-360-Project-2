@@ -18,7 +18,11 @@ public class Memory {
     /**
      * Holds the bytes in memory. The size allows for any valid unsigned short to be used as an address.
      */
-    private byte[] mem = new byte[65536];
+    private byte[] mem;
+
+    public Memory() {
+        mem = new byte[65536];
+    }
 
     /**
      * Takes in a memory address and sets that memory address to the given value.
