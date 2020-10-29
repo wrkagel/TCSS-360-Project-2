@@ -187,6 +187,14 @@ public class CPU {
         listener.registerUpdate("instructionSpecifier", instructionSpecifier.getShort());
         listener.registerUpdate("operandSpecifier", null);
         listener.registerUpdate("operand", null);
+        listener.registerUpdate("accumulator", accumulator.getShort());
+        listener.registerUpdate("index", index.getShort());
+        listener.registerUpdate("stackPointer", stackPointer.getShort());
+        listener.flagUpdate("negativeFlag",  negativeFlag);
+        listener.flagUpdate("zeroFlag", zeroFlag);
+        listener.flagUpdate("overflowFlag", overflowFlag);
+        listener.flagUpdate("carryFlag", carryFlag);
+        listener.memoryUpdate(mem.getMemCopy());
     }
 
     /**
@@ -210,7 +218,7 @@ public class CPU {
         short value = 0;
         if (negativeFlag) value += 8;
         if (zeroFlag) value += 4;
-        if (overflowFlag) value+= 2;
+        if (overflowFlag) value += 2;
         if (carryFlag) value += 1;
         accumulator.setShort(value);
         if (listener == null || !isTrace) return;
@@ -282,6 +290,17 @@ public class CPU {
         if (opCode < 26) {
 
         }
+        if (listener == null || !isTrace) return;
+        listener.registerUpdate("programCounter", programCounter.getShort());
+        listener.registerUpdate("instructionSpecifier", instructionSpecifier.getShort());
+        listener.registerUpdate("operandSpecifier", operandSpecifier.getShort());
+        listener.registerUpdate("operand", operand.getShort());
+        listener.registerUpdate("accumulator", accumulator.getShort());
+        listener.registerUpdate("index", index.getShort());
+        listener.flagUpdate("negativeFlag", negativeFlag);
+        listener.flagUpdate("zeroFlag", zeroFlag);
+        listener.flagUpdate("overflowFlag", overflowFlag);
+        listener.flagUpdate("carryFlag", carryFlag);
     }
 
     /**
@@ -321,8 +340,7 @@ public class CPU {
         listener.registerUpdate("operandSpecifier", operandSpecifier.getShort());
         listener.registerUpdate("operand", operand.getShort());
         if (isInput) {
-            short address = getOperandAddress(AddressingMode.values()[mode]);
-            listener.memoryUpdate(address, mem.getByte(address), mem.getByte((short) (address + 1)));
+            listener.memoryUpdate(mem.getMemCopy());
         }
     }
 
@@ -390,8 +408,7 @@ public class CPU {
         listener.registerUpdate("operandSpecifier", operandSpecifier.getShort());
         listener.registerUpdate("operand", operand.getShort());
         if (isInput) {
-            short address = getOperandAddress(AddressingMode.values()[mode]);
-            listener.memoryUpdate(address, mem.getByte(address));
+            listener.memoryUpdate(mem.getMemCopy());
         }
     }
 
@@ -405,6 +422,18 @@ public class CPU {
      * Performs an ALU operation with two inputs.
      */
     private void binaryALUop() {
+
+        if(listener ==null || !isTrace) return;
+        listener.registerUpdate("programCounter", programCounter.getShort());
+        listener.registerUpdate("instructionSpecifier", instructionSpecifier.getShort());
+        listener.registerUpdate("operandSpecifier", operandSpecifier.getShort());
+        listener.registerUpdate("operand", operand.getShort());
+        listener.registerUpdate("accumulator", accumulator.getShort());
+        listener.registerUpdate("index", index.getShort());
+        listener.flagUpdate("negativeFlag", negativeFlag);
+        listener.flagUpdate("zeroFlag", zeroFlag);
+        listener.flagUpdate("overflowFlag", overflowFlag);
+        listener.flagUpdate("carryFlag", carryFlag);
     }
 
     /**
@@ -490,11 +519,7 @@ public class CPU {
         listener.registerUpdate("instructionSpecifier", instructionSpecifier.getShort());
         listener.registerUpdate("operandSpecifier", operandSpecifier.getShort());
         listener.registerUpdate("operand", operand.getShort());
-        if (isByte == 0) {
-            listener.memoryUpdate(address, mem.getByte(address), mem.getByte((short) (address + 1)));
-        } else {
-            listener.memoryUpdate(address, mem.getByte(address));
-        }
+        listener.memoryUpdate(mem.getMemCopy());
     }
 
     private short getOperandAddress(AddressingMode mode) {

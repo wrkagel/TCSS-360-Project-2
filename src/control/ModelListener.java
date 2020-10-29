@@ -36,12 +36,11 @@ public interface ModelListener {
     void flagUpdate(String name, boolean value);
 
     /**
-     * Informs the listener of changes in memory.
-     * @param startingAddress the starting memory address of the given values. Should be read as an unsigned short.
+     * Gives the listener a full copy of memory to pass to the view.
      * @param values a consecutive set of values in memory with the first value being the value at the
      *               starting address.
      */
-    void memoryUpdate(short startingAddress, byte ... values);
+    void memoryUpdate(byte[] values);
 
     /**
      * Tells the listener that output has been generated.

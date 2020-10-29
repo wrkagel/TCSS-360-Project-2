@@ -82,7 +82,7 @@ public class Machine {
         for (int i =0; i < values.length; i++) {
             mem.setByte((short) (startAddress + i), values[i]);
         }
-        listener.memoryUpdate(startAddress, values);
+        listener.memoryUpdate(mem.getMemCopy());
     }
 
 }

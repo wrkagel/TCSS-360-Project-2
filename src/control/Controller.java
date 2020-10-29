@@ -47,7 +47,7 @@ public class Controller implements ModelListener, ViewListener {
     }
 
     @Override
-    public void memoryUpdate(short startingAddress, byte... values) {
+    public void memoryUpdate(byte[] values) {
 
     }
 
@@ -73,6 +73,16 @@ public class Controller implements ModelListener, ViewListener {
 
     @Override
     public void buildSelection(String name) {
+
+    }
+
+    @Override
+    public void editSelection(String name) {
+
+    }
+
+    @Override
+    public void traceSelection(String name) {
 
     }
 }
