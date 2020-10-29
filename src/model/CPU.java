@@ -8,6 +8,8 @@ RJ Alabado, Walter Kagel, Taehong Kim
 
 import control.ModelListener;
 
+import java.util.Queue;
+
 /**
  * Processes the instructions stored in memory by performing the fetch-execute cycle for a single instruction.
  * Contains all pep/8 internal registers.
@@ -95,10 +97,12 @@ public class CPU {
      */
     private boolean isTrace;
 
+    private String input = "";
+
     /**
      * Create the cpu with its ALU, registers, and flags.
      */
-    public CPU(Memory mem){
+    public CPU(Memory memIn){
         alu = new ALU();
         accumulator = new Register();
         index = new Register();
@@ -113,7 +117,7 @@ public class CPU {
         carryFlag = false;
         listener = null;
         isTrace = false;
-        this.mem = mem;
+        mem = memIn;
     }
 
     /**
@@ -274,25 +278,121 @@ public class CPU {
      * Performs an ALU operation that only has one input.
      */
     private void unaryALUop() {
+        int opCode = Short.toUnsignedInt(instructionSpecifier.getShort());
+        if (opCode < 26) {
+
+        }
     }
 
     /**
      * Performs an input or output operation on a decimal value.
      */
     private void decimalIO() {
+        if (listener == null) throw new IllegalStateException("Cannot do input or output without a listener");
+        int instrSpec = Short.toUnsignedInt(instructionSpecifier.getShort());
+        operandSpecifier.setShort(mem.getShort(programCounter.getShort()));
+        programCounter.setShort((short) (programCounter.getShort() + 2));
+        int mode = instrSpec & 0x7;
+        boolean isInput = (instrSpec & 0x8) == 0x8;
+        if (isInput) {
+            if (mode == 0) throw new IllegalArgumentException("Illegal addressing mode for decimal input.");
+            if (input.length() == 0) input = listener.getInput();
+            short oper;
+            try {
+                oper = Short.parseShort(input);
+            } catch (NumberFormatException e) {
+                throw new IllegalArgumentException("Input cannot be read as a decimal word.");
+            }
+            operand.setShort(oper);
+            mem.setShort(getOperandAddress(AddressingMode.values()[mode]), oper);
+        } else {
+            short oper;
+            if (mode == 0) {
+                oper = operandSpecifier.getShort();
+            } else {
+                oper = mem.getShort(getOperandAddress(AddressingMode.values()[mode]));
+            }
+            operand.setShort(oper);
+            listener.output("" + oper);
+        }
+        if (!isTrace) return;
+        listener.registerUpdate("programCounter", programCounter.getShort());
+        listener.registerUpdate("instructionSpecifier", instructionSpecifier.getShort());
+        listener.registerUpdate("operandSpecifier", operandSpecifier.getShort());
+        listener.registerUpdate("operand", operand.getShort());
+        if (isInput) {
+            short address = getOperandAddress(AddressingMode.values()[mode]);
+            listener.memoryUpdate(address, mem.getByte(address), mem.getByte((short) (address + 1)));
+        }
     }
 
     /**
-     * Outputs a null terminated string based with the first character at the starting address
+     * Outputs a null terminated string with the first character at the starting address
      * indicated by the operand.
      */
     private void stringOut() {
+        if (listener == null) throw new IllegalStateException("Cannot perform string out without a listener");
+        int instSpec = Short.toUnsignedInt(instructionSpecifier.getShort());
+        int mode = instSpec & 0x7;
+        operandSpecifier.setShort(mem.getShort(programCounter.getShort()));
+        programCounter.setShort((short) (programCounter.getShort() + 2));
+        if (mode != 1 && mode != 2 && mode != 4) throw new IllegalArgumentException("Illegal addressing mode" +
+                " for string out.");
+        short oper = getOperandAddress(AddressingMode.values()[mode]);
+        operand.setShort(oper);
+        StringBuilder sb = new StringBuilder();
+        byte out = mem.getByte(oper);
+        while (out != 0) {
+            sb.append((char) out);
+            oper++;
+            out = mem.getByte(oper);
+        }
+        listener.output(sb.toString());
+        if (!isTrace) return;
+        listener.registerUpdate("programCounter", programCounter.getShort());
+        listener.registerUpdate("instructionSpecifier", instructionSpecifier.getShort());
+        listener.registerUpdate("operandSpecifier", operandSpecifier.getShort());
+        listener.registerUpdate("operand", operand.getShort());
     }
 
     /**
      * Performs input or output of a single character.
      */
     private void charIO() {
+        if (listener == null) throw new IllegalStateException("Cannot do input or output without a listener");
+        int instrSpec = Short.toUnsignedInt(instructionSpecifier.getShort());
+        operandSpecifier.setShort(mem.getShort(programCounter.getShort()));
+        programCounter.setShort((short) (programCounter.getShort() + 2));
+        int mode = instrSpec & 0x7;
+        boolean isInput = (instrSpec & 0x8) == 0x8;
+        if (isInput) {
+            if (mode == 0) throw new IllegalArgumentException("Illegal addressing mode for character input.");
+            if (input.length() == 0) input = listener.getInput();
+            char oper = input.charAt(0);
+            input = input.substring(1);
+            operand.setByte(true, (byte) 0);
+            operand.setByte(false, (byte) oper);
+            mem.setByte(getOperandAddress(AddressingMode.values()[mode]), (byte) oper);
+        } else {
+            char oper;
+            if (mode == 0) {
+                oper = (char) operandSpecifier.getByte(false);
+            } else {
+                oper = (char) mem.getByte(getOperandAddress(AddressingMode.values()[mode]));
+            }
+            operand.setByte(true, (byte) 0);
+            operand.setByte(false, (byte) oper);
+            listener.output("" + oper);
+        }
+        if (!isTrace) return;
+        listener.registerUpdate("programCounter", programCounter.getShort());
+        listener.registerUpdate("instructionSpecifier", instructionSpecifier.getShort());
+        listener.registerUpdate("operandSpecifier", operandSpecifier.getShort());
+        listener.registerUpdate("operand", operand.getShort());
+        if (isInput) {
+            short address = getOperandAddress(AddressingMode.values()[mode]);
+            listener.memoryUpdate(address, mem.getByte(address));
+        }
     }
 
     /**
@@ -342,16 +442,8 @@ public class CPU {
                 index.setByte(false, operand.getByte(false));
             }
         }
-        if(operand.getShort() < 0) {
-            negativeFlag = true;
-        } else {
-            negativeFlag = false;
-        }
-        if (operand.getShort() == 0) {
-            zeroFlag = true;
-        } else {
-            zeroFlag = false;
-        }
+        negativeFlag = operand.getShort() < 0;
+        zeroFlag = operand.getShort() == 0;
         if (listener == null || !isTrace) return;
         listener.registerUpdate("programCounter", programCounter.getShort());
         listener.registerUpdate("instructionSpecifier", instructionSpecifier.getShort());
@@ -399,7 +491,7 @@ public class CPU {
         listener.registerUpdate("operandSpecifier", operandSpecifier.getShort());
         listener.registerUpdate("operand", operand.getShort());
         if (isByte == 0) {
-            listener.memoryUpdate(address, new byte[] {mem.getByte(address), mem.getByte((short) (address + 1))});
+            listener.memoryUpdate(address, mem.getByte(address), mem.getByte((short) (address + 1)));
         } else {
             listener.memoryUpdate(address, mem.getByte(address));
         }
