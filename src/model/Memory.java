@@ -11,7 +11,7 @@ import java.util.Arrays;
 /**
  * Model of memory for the pep/8 simulator.
  * @author Group 8, Lead: Walter Kagel
- * @version 10/27/2020
+ * @version 10/29/2020
  */
 public class Memory {
 

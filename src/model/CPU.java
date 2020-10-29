@@ -12,7 +12,7 @@ import control.ModelListener;
  * Processes the instructions stored in memory by performing the fetch-execute cycle for a single instruction.
  * Contains all pep/8 internal registers.
  * @author Group 8, Lead: Walter Kagel
- * @version 10/28/2020
+ * @version 10/29/2020
  */
 public class CPU {
 
@@ -110,7 +110,7 @@ public class CPU {
         operandSpecifier = new Register();
         operand = new Register();
         negativeFlag = false;
-        zeroFlag = true;
+        zeroFlag = false;
         overflowFlag = false;
         carryFlag = false;
         listener = null;
@@ -251,7 +251,7 @@ public class CPU {
         } else if (instSpec < 16) {
             shouldBranch = !negativeFlag;
         } else if (instSpec < 18) {
-            shouldBranch = !(negativeFlag && zeroFlag);
+            shouldBranch = !(negativeFlag || zeroFlag);
         } else if (instSpec < 20) {
             shouldBranch = overflowFlag;
         } else if (instSpec < 22) {
