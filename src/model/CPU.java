@@ -8,8 +8,6 @@ RJ Alabado, Walter Kagel, Taehong Kim
 
 import control.ModelListener;
 
-import java.util.Queue;
-
 /**
  * Processes the instructions stored in memory by performing the fetch-execute cycle for a single instruction.
  * Contains all pep/8 internal registers.
@@ -95,7 +93,7 @@ public class CPU {
      * Sets if the CPU updates the listener after every instruction or only after a stop instruction.
      * Added to increase efficiency.
      */
-    private boolean isTrace;
+    private boolean isStep;
 
     private String input = "";
 
@@ -116,8 +114,10 @@ public class CPU {
         overflowFlag = false;
         carryFlag = false;
         listener = null;
-        isTrace = false;
+        isStep = false;
         mem = memIn;
+        //Initialize stack pointer to top of stack.
+        stackPointer.setShort((short) 0xFBCF);
     }
 
     /**
@@ -134,7 +134,7 @@ public class CPU {
      * @return true if instruction read was STOP, false otherwise.
      */
     public boolean fetchExecute(boolean isTrace) {
-        this.isTrace = isTrace;
+        this.isStep = isTrace;
         short instructionAddress = programCounter.getShort();
         instructionSpecifier.setByte(false, mem.getByte(instructionAddress));
         programCounter.setShort((short) (instructionAddress + 1));
@@ -144,6 +144,7 @@ public class CPU {
             return true;
         } else if (instSpec == 1){
             //returnFromTrap();
+            //Traps not currently implemented
         } else if (instSpec == 2) {
             moveSPtoAcc();
         } else if (instSpec == 3) {
@@ -172,7 +173,7 @@ public class CPU {
             store();
         } else {
             if (listener != null) {
-                listener.errorMessage("No valid opCode found. This message should never be reached.");
+                throw new IllegalStateException("No valid opCode found. Error in code.");
             }
         }
         return false;
@@ -203,7 +204,7 @@ public class CPU {
     private void moveSPtoAcc() {
         short value = stackPointer.getShort();
         accumulator.setShort(value);
-        if(listener == null || !isTrace) return;
+        if(listener == null || !isStep) return;
         listener.registerUpdate("accumulator", value);
         listener.registerUpdate("programCounter", programCounter.getShort());
         listener.registerUpdate("instructionSpecifier", instructionSpecifier.getShort());
@@ -221,7 +222,7 @@ public class CPU {
         if (overflowFlag) value += 2;
         if (carryFlag) value += 1;
         accumulator.setShort(value);
-        if (listener == null || !isTrace) return;
+        if (listener == null || !isStep) return;
         listener.registerUpdate("accumulator", value);
         listener.registerUpdate("programCounter", programCounter.getShort());
         listener.registerUpdate("instructionSpecifier", instructionSpecifier.getShort());
@@ -235,8 +236,7 @@ public class CPU {
     private void branch() {
         boolean shouldBranch;
         int instSpec = Short.toUnsignedInt(instructionSpecifier.getShort());
-        short opSpec = mem.getShort(programCounter.getShort());
-        operandSpecifier.setShort(opSpec);
+        operandSpecifier.setShort(mem.getShort(programCounter.getShort()));
         programCounter.setShort((short) (programCounter.getShort() + 2));
         if (instSpec < 6) {
             shouldBranch = true;
@@ -257,19 +257,17 @@ public class CPU {
         } else if (instSpec < 22) {
             shouldBranch = carryFlag;
         } else {
-            listener.errorMessage("Incorrectly went into branch function.");
-            return;
+            throw new IllegalStateException("Incorrectly went into branch function. Error in code.");
         }
-        short oper;
+        if ((instSpec & 0x1) == 1) {
+            operand.setShort(mem.getShort(getOperandAddress(AddressingMode.X)));
+        } else {
+            operand.setShort(operandSpecifier.getShort());
+        }
         if (shouldBranch) {
-            if ((instSpec & 0x1) == 1) {
-                oper = mem.getShort(getOperandAddress(AddressingMode.X));
-            } else {
-                oper = opSpec;
-            }
-            programCounter.setShort(oper);
+            programCounter.setShort(operand.getShort());
         }
-        if (listener == null || !isTrace) return;
+        if (listener == null || !isStep) return;
         listener.registerUpdate("programCounter", programCounter.getShort());
         listener.registerUpdate("instructionSpecifier", instructionSpecifier.getShort());
         listener.registerUpdate("operandSpecifier", operandSpecifier.getShort());
@@ -277,9 +275,26 @@ public class CPU {
     }
 
     /**
-     * Calls a subroutine. Currently unimplemented.
+     * Moves the stack pointer down 2, stores the program counter at mem[SP], then puts the operand
+     * into the PC.
      */
     private void callSubroutine() {
+        operandSpecifier.setShort(mem.getShort(programCounter.getShort()));
+        programCounter.setShort((short) (programCounter.getShort() + 2));
+        stackPointer.setShort((short) (stackPointer.getShort() - 2));
+        mem.setShort(stackPointer.getShort(), programCounter.getShort());
+        if ((instructionSpecifier.getShort() & 0x1) == 1) {
+            operand.setShort(mem.getShort(getOperandAddress(AddressingMode.X)));
+        } else {
+            operand.setShort(operandSpecifier.getShort());
+        }
+        if (listener == null || !isStep) return;
+        listener.registerUpdate("programCounter", programCounter.getShort());
+        listener.registerUpdate("stackPointer", stackPointer.getShort());
+        listener.registerUpdate("instructionSpecifier", instructionSpecifier.getShort());
+        listener.registerUpdate("operandSpecifier", operandSpecifier.getShort());
+        listener.registerUpdate("operand", operand.getShort());
+        listener.memoryUpdate(mem.getMemCopy());
     }
 
     /**
@@ -290,11 +305,11 @@ public class CPU {
         if (opCode < 26) {
 
         }
-        if (listener == null || !isTrace) return;
+        if (listener == null || !isStep) return;
         listener.registerUpdate("programCounter", programCounter.getShort());
         listener.registerUpdate("instructionSpecifier", instructionSpecifier.getShort());
-        listener.registerUpdate("operandSpecifier", operandSpecifier.getShort());
-        listener.registerUpdate("operand", operand.getShort());
+        listener.registerUpdate("operandSpecifier", null);
+        listener.registerUpdate("operand", null);
         listener.registerUpdate("accumulator", accumulator.getShort());
         listener.registerUpdate("index", index.getShort());
         listener.flagUpdate("negativeFlag", negativeFlag);
@@ -334,7 +349,7 @@ public class CPU {
             operand.setShort(oper);
             listener.output("" + oper);
         }
-        if (!isTrace) return;
+        if (!isStep) return;
         listener.registerUpdate("programCounter", programCounter.getShort());
         listener.registerUpdate("instructionSpecifier", instructionSpecifier.getShort());
         listener.registerUpdate("operandSpecifier", operandSpecifier.getShort());
@@ -366,7 +381,7 @@ public class CPU {
             out = mem.getByte(oper);
         }
         listener.output(sb.toString());
-        if (!isTrace) return;
+        if (!isStep) return;
         listener.registerUpdate("programCounter", programCounter.getShort());
         listener.registerUpdate("instructionSpecifier", instructionSpecifier.getShort());
         listener.registerUpdate("operandSpecifier", operandSpecifier.getShort());
@@ -402,7 +417,7 @@ public class CPU {
             operand.setByte(false, (byte) oper);
             listener.output("" + oper);
         }
-        if (!isTrace) return;
+        if (!isStep) return;
         listener.registerUpdate("programCounter", programCounter.getShort());
         listener.registerUpdate("instructionSpecifier", instructionSpecifier.getShort());
         listener.registerUpdate("operandSpecifier", operandSpecifier.getShort());
@@ -416,6 +431,16 @@ public class CPU {
      * Returns from a call.
      */
     private void returnFromCall() {
+        int n = instructionSpecifier.getShort() & 0x7;
+        stackPointer.setShort((short) (stackPointer.getShort() + n));
+        programCounter.setShort(mem.getShort(stackPointer.getShort()));
+        stackPointer.setShort((short) (stackPointer.getShort() + 2));
+        if (listener == null || !isStep) return;
+        listener.registerUpdate("programCounter", programCounter.getShort());
+        listener.registerUpdate("stackPointer", stackPointer.getShort());
+        listener.registerUpdate("instructionSpecifier", instructionSpecifier.getShort());
+        listener.registerUpdate("operandSpecifier", null);
+        listener.registerUpdate("operand", null);
     }
 
     /**
@@ -423,7 +448,7 @@ public class CPU {
      */
     private void binaryALUop() {
 
-        if(listener ==null || !isTrace) return;
+        if(listener ==null || !isStep) return;
         listener.registerUpdate("programCounter", programCounter.getShort());
         listener.registerUpdate("instructionSpecifier", instructionSpecifier.getShort());
         listener.registerUpdate("operandSpecifier", operandSpecifier.getShort());
@@ -473,7 +498,7 @@ public class CPU {
         }
         negativeFlag = operand.getShort() < 0;
         zeroFlag = operand.getShort() == 0;
-        if (listener == null || !isTrace) return;
+        if (listener == null || !isStep) return;
         listener.registerUpdate("programCounter", programCounter.getShort());
         listener.registerUpdate("instructionSpecifier", instructionSpecifier.getShort());
         listener.registerUpdate("operandSpecifier", operandSpecifier.getShort());
@@ -514,7 +539,7 @@ public class CPU {
             }
             mem.setByte(address, operand.getByte(false));
         }
-        if (listener == null || !isTrace) return;
+        if (listener == null || !isStep) return;
         listener.registerUpdate("programCounter", programCounter.getShort());
         listener.registerUpdate("instructionSpecifier", instructionSpecifier.getShort());
         listener.registerUpdate("operandSpecifier", operandSpecifier.getShort());
@@ -525,10 +550,8 @@ public class CPU {
     private short getOperandAddress(AddressingMode mode) {
         short address = operandSpecifier.getShort();
         switch(mode) {
-            case I -> {
-                listener.errorMessage("Immediate Mode does not require addressing. Error in code.");
-                return address;
-            }
+            case I -> throw new IllegalStateException("Immediate mode does not require addressing. " +
+                    "Error in code.");
             case N -> address = mem.getShort(address);
             case S -> address = (short) (stackPointer.getShort() + operandSpecifier.getShort());
             case SF -> {

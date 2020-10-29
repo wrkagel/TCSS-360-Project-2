@@ -27,11 +27,9 @@ class CPUTest implements ModelListener {
 
     private ArrayList<String> names;
 
-    private ArrayList<Object> values;
+    private ArrayList<Object> cpuValues;
 
     private String output = "";
-
-    private String error = "";
 
     private String input = "";
 
@@ -41,7 +39,7 @@ class CPUTest implements ModelListener {
         cpu = new CPU(mem);
         cpu.addListener(this);
         names = new ArrayList<String>();
-        values = new ArrayList<Object>();
+        cpuValues = new ArrayList<Object>();
     }
 
     /**
@@ -60,12 +58,12 @@ class CPUTest implements ModelListener {
                 (short) 0xA2CF, (short) 0};
         for (int i = 0; i < 6; i++) {
             assertEquals(expectedNames[i], names.get(i));
-            assertEquals(numberValues[i], (short) values.get(i));
+            assertEquals(numberValues[i], (short) cpuValues.get(i));
         }
         assertEquals(expectedNames[6], names.get(6));
         assertEquals(expectedNames[7], names.get(7));
-        assertTrue((boolean) values.get(6));
-        assertFalse((boolean) values.get(7));
+        assertTrue((boolean) cpuValues.get(6));
+        assertFalse((boolean) cpuValues.get(7));
     }
 
     /**
@@ -78,7 +76,7 @@ class CPUTest implements ModelListener {
         mem.setByte((short) 2, (byte) 0x04);
         mem.setShort((short) 4, (short) 0x0F01);
         cpu.fetchExecute(true);
-        assertEquals((short) 0x0F01, (short) values.get(4));
+        assertEquals((short) 0x0F01, (short) cpuValues.get(4));
     }
 
     /**
@@ -90,7 +88,7 @@ class CPUTest implements ModelListener {
         mem.setByte((short) 1, (byte) 0xA2);
         mem.setByte((short) 2, (byte) 0xCF);
         cpu.fetchExecute(true);
-        assertEquals((short) 0xA2CF, (short) values.get(5));
+        assertEquals((short) 0xA2CF, (short) cpuValues.get(5));
     }
 
     /**
@@ -106,7 +104,7 @@ class CPUTest implements ModelListener {
         mem.setByte((short) 5, (byte) 0xF2);
         cpu.fetchExecute(false);
         cpu.fetchExecute(true);
-        assertEquals((short) 0x71F2, values.get(4));
+        assertEquals((short) 0x71F2, cpuValues.get(4));
     }
 
     /**
@@ -122,7 +120,7 @@ class CPUTest implements ModelListener {
         mem.setByte((short) 5, (byte) 0xF2);
         cpu.fetchExecute(false);
         cpu.fetchExecute(true);
-        assertEquals((short) 0x71F2, values.get(5));
+        assertEquals((short) 0x71F2, cpuValues.get(5));
     }
 
     /**
@@ -181,6 +179,100 @@ class CPUTest implements ModelListener {
         assertEquals((byte) 0x00, mem.getByte((short) 0xF701));
     }
 
+    /**
+     * Test that attempting to use the immediate addressing mode for store throws an error.
+     */
+    @Test
+    void storeIllegalAddressingMode() {
+        //Load something into the index, then call store with the immediate addressing mode.
+        byte[] memInitial = new byte[] {(byte) 0xC8, (byte) 0xD1, (byte) 0x80, (byte) 0xF8, (byte) 0xF7,
+                (byte) 0x00};
+        for (int i = 0; i < memInitial.length; i++) mem.setByte((short) i, memInitial[i]);
+        //Fetch execute called twice to run both instructions.
+        cpu.fetchExecute(false);
+        assertThrows(IllegalArgumentException.class, () -> cpu.fetchExecute(false));
+    }
+
+    /**
+     * Test inputting a single character with direct addressing mode.
+     */
+    @Test
+    void charInputDirect() {
+        mem.setByte((short) 0, (byte) 0x49);
+        mem.setByte((short) 1, (byte) 0x00);
+        mem.setByte((short) 2, (byte) 0x01);
+        input = "y";
+        cpu.fetchExecute(false);
+        assertEquals('y', (char) mem.getByte((short) 0x0001));
+    }
+
+    /**
+     * Test a single character output with immediate addressing mode.
+     */
+    @Test
+    void charOutputImmediate() {
+        mem.setByte((short) 0, (byte) 0x50);
+        mem.setByte((short) 1, (byte) 0x00);
+        mem.setByte((short) 2, (byte) 0x35);
+        cpu.fetchExecute(false);
+        assertEquals("5", output);
+    }
+
+    /**
+     * Test single character output with direct addressing mode.
+     */
+    @Test
+    void charOutputDirect() {
+        mem.setByte((short) 0, (byte) 0x51);
+        mem.setByte((short) 1, (byte) 0xA5);
+        mem.setByte((short) 2, (byte) 0x11);
+        mem.setByte((short) 0xA511, (byte) 0x0A);
+        cpu.fetchExecute(false);
+        assertEquals("\n", output);
+    }
+
+    /**
+     * Test output of a simple string with direct addressing mode;
+     */
+    @Test
+    void stringOutDirect() {
+        mem.setByte((short) 0, (byte) 0x41);
+        mem.setByte((short) 1, (byte) 0x22);
+        mem.setByte((short) 2, (byte) 0x22);
+        String testString = "I am the walrus\n I am the eggman\n These are the wrong lyrics! 556";
+        byte[] testBytes = testString.getBytes();
+        for (int i = 0; i < testBytes.length; i++) {
+            mem.setByte((short) (0x2222 + i), testBytes[i]);
+        }
+        cpu.fetchExecute(false);
+        assertEquals(testString, output);
+    }
+
+    /**
+     * Tests that moving the stack pointer to the accumulator works.
+     */
+    @Test
+    void moveSPToAccumulator() {
+        mem.setByte((short) 0, (byte) 0x02);
+        cpu.fetchExecute(true);
+        assertEquals((short) 0xFBCF, cpuValues.get(0));
+    }
+
+    /**
+     * Tests that the N flag is properly moved into the accumulator.
+     */
+    @Test
+    void moveNFlagToAccumulator() {
+        //First instruction sets N flag, then moves flags into accumulator
+        mem.setByte((short) 0, (byte) 0xC0);
+        mem.setByte((short) 1, (byte) 0xA2);
+        mem.setByte((short) 2, (byte) 0xCF);
+        mem.setByte((short) 3, (byte) 0x03);
+        cpu.fetchExecute(false);
+        cpu.fetchExecute(true);
+        assertEquals((short) 8, cpuValues.get(0));
+    }
+
     //Everything past here is implementing the ModelListener, so the test class can get feedback from the CPU.
 
     /**
@@ -200,7 +292,7 @@ class CPUTest implements ModelListener {
     @Override
     public void registerUpdate(String name, Short value) {
         names.add(name);
-        values.add(value);
+        cpuValues.add(value);
     }
 
     /**
@@ -211,11 +303,11 @@ class CPUTest implements ModelListener {
     @Override
     public void flagUpdate(String name, boolean value) {
         names.add(name);
-        values.add(value);
+        cpuValues.add(value);
     }
 
     /**
-     * Not implemented as the CPU test has direct access to the memory.
+     * Not implemented as CPUTest has direct access to the memory used during the test.
      * @param values a full copy of memory.
      */
     @Override
@@ -233,12 +325,12 @@ class CPUTest implements ModelListener {
     }
 
     /**
-     * Grabs any generated error messages. Note that in general error messages will be produced by the machine.
-     * The CPU simply throws the error.
+     * Not implemented since the CPU throws errors that will be caught by the Machine and then passed
+     * to the listener. Thus, no listener.errorMessage() methods will be called while testing CPU.
      * @param message the error message.
      */
     @Override
     public void errorMessage(String message) {
-        error = message;
+
     }
 }
