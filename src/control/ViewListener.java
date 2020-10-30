@@ -32,8 +32,19 @@ public interface ViewListener {
      * @param name name of selection
      */
     void buildSelection(String name);
-
     /*
     This will be the same pattern for all other interactions. To be completed later.
      */
+
+    /**
+     * Sends the name of the selection chosen from the edit menu bar item to the controller.
+     * @param name name of selection
+     */
+    void editSelection(String name);
+
+    /**
+     * Sends the name of the selection chosen from the cpu trace selection to the controller.
+     * @param name name of selection
+     */
+    void traceSelection(String name);
 }
