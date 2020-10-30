@@ -11,7 +11,7 @@ RJ Alabado, Walter Kagel, Taehong Kim
  * an internal change has occurred. The listener will then perform all necessary actions and function calls
  * based on that update information.
  * @author Group 8, Lead: Walter Kagel
- * @version 10/26/2020
+ * @version 10/29/2020
  */
 public interface ModelListener {
 
@@ -36,12 +36,11 @@ public interface ModelListener {
     void flagUpdate(String name, boolean value);
 
     /**
-     * Informs the listener of changes in memory.
-     * @param startingAddress the starting memory address of the given values. Should be read as an unsigned short.
+     * Gives the listener a full copy of memory to pass to the view.
      * @param values a consecutive set of values in memory with the first value being the value at the
      *               starting address.
      */
-    void memoryUpdate(short startingAddress, byte ... values);
+    void memoryUpdate(byte[] values);
 
     /**
      * Tells the listener that output has been generated.

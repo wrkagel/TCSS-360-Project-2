@@ -13,7 +13,7 @@ RJ Alabado, Walter Kagel, Taehong Kim
 /**
  * Tests the load and store operation of the Memory class.
  * @author Group8, Lead: Walter Kagel
- * @version 10/27/2020
+ * @version 10/29/2020
  */
 class MemoryTest {
 
@@ -85,11 +85,31 @@ class MemoryTest {
     }
 
     /**
+     * Test that the memory copy returns a correct copy of the memory. Also, tests that what is returned
+     * is actually a copy.
+     */
+    @Test
+    void testGetMemCopy() {
+        byte[] expectedMemCopy = new byte[65536];
+        expectedMemCopy[0] = (byte) 0xFF;
+        expectedMemCopy[5780] = (byte) 0x77;
+        expectedMemCopy[65535] = (byte) 0x04;
+        mem.setByte((short) 0, (byte) 0xFF);
+        mem.setByte((short) 5780, (byte) 0x77);
+        mem.setByte((short) 0xFFFF, (byte) 0x04);
+        byte[] memCopy = mem.getMemCopy();
+        assertArrayEquals(expectedMemCopy, memCopy);
+        mem.setByte((short) 0, (byte) 0x09);
+        assertNotEquals((byte) 0x09, memCopy[0]);
+    }
+
+    /**
      * Tests that attempting to store a short that would go outside of memory throws an error.
      */
     @Test
     void testErrorStoringShort() {
-        assertThrows(IllegalArgumentException.class, () -> mem.setShort((short) 0xFFFF, (short) 5));
+        assertThrows(IllegalArgumentException.class,
+                () -> mem.setShort((short) 0xFFFF, (short) 5));
     }
 
     /**
@@ -97,6 +117,7 @@ class MemoryTest {
      */
     @Test
     void testErrorLoadingShort() {
-        assertThrows(IllegalArgumentException.class, () -> mem.getShort((short) 0xFFFF));
+        assertThrows(IllegalArgumentException.class,
+                () -> mem.getShort((short) 0xFFFF));
     }
 }

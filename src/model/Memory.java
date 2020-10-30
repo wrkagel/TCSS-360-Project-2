@@ -11,14 +11,18 @@ import java.util.Arrays;
 /**
  * Model of memory for the pep/8 simulator.
  * @author Group 8, Lead: Walter Kagel
- * @version 10/27/2020
+ * @version 10/29/2020
  */
 public class Memory {
 
     /**
      * Holds the bytes in memory. The size allows for any valid unsigned short to be used as an address.
      */
-    private byte[] mem = new byte[65536];
+    private byte[] mem;
+
+    public Memory() {
+        mem = new byte[65536];
+    }
 
     /**
      * Takes in a memory address and sets that memory address to the given value.
@@ -57,6 +61,11 @@ public class Memory {
         mem[intAddress + 1] = (byte) (value & 0xFF);
     }
 
+    /**
+     * Returns two consecutive byte address as one combined short. Added for convenience.
+     * @param address the starting byte address
+     * @return the two bytes combined as a short.
+     */
     public short getShort(short address) {
         int intAddress = Short.toUnsignedInt(address);
         if (intAddress >= mem.length - 1) {
@@ -65,6 +74,14 @@ public class Memory {
         byte mostSig = mem[intAddress];
         byte leastSig = mem[intAddress + 1];
         return (short) ((mostSig << 8) | (leastSig & 0xFF));
+    }
+
+    /**
+     * Returns a copy of the memory. Used for updating the listener.
+     * @return a full copy of the contents of memory.
+     */
+    public byte[] getMemCopy() {
+        return Arrays.copyOf(mem, mem.length);
     }
 
 }
