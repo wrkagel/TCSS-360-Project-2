@@ -11,6 +11,8 @@ RJ Alabado, Walter Kagel, Taehong Kim
  * into machine language and assembly listing. Returns a boolean of if the assembly was succesful or not.
  * Stores the generated text in private fields accessible with getters and will log all errors into an errorText
  * string generated during the assembly attempt.
+ * @author Group 8
+ * @version 10/25/2020
  */
 public class Assembler {
 
