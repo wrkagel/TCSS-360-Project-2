@@ -29,17 +29,19 @@ class CPUTest implements ModelListener {
 
     private ArrayList<Object> cpuValues;
 
-    private String output = "";
+    private String output;
 
-    private String input = "";
+    private String input;
 
     @BeforeEach
     void initialize() {
         mem = new Memory();
         cpu = new CPU(mem);
         cpu.addListener(this);
-        names = new ArrayList<String>();
-        cpuValues = new ArrayList<Object>();
+        names = new ArrayList<>();
+        cpuValues = new ArrayList<>();
+        output = "";
+        input = "";
     }
 
     /**
@@ -482,6 +484,29 @@ class CPUTest implements ModelListener {
         assertEquals((short) 0x0006, cpuValues.get(0));
     }
 
+    /**
+     * Attempts to call and return from a subroutine. Should cause the word "Hi" to be into
+     * output.
+     */
+    @Test
+    void callAndReturnSubroutine() {
+        mem.setByte((short) 0, (byte) 0x16);
+        mem.setByte((short) 1, (byte) 0x55);
+        mem.setByte((short) 2, (byte) 0xFF);
+        mem.setByte((short) 3, (byte) 0x50);
+        mem.setByte((short) 4, (byte) 0x00);
+        mem.setByte((short) 5, (byte) 0x69);
+        mem.setByte((short) 0x55FF, (byte) 0x50);
+        mem.setByte((short) 0x5600, (byte) 0x00);
+        mem.setByte((short) 0x5601, (byte) 0x48);
+        mem.setByte((short) 0x5602, (byte) 0x58);
+        cpu.fetchExecute(false);
+        cpu.fetchExecute(false);
+        cpu.fetchExecute(false);
+        cpu.fetchExecute(false);
+        assertEquals("Hi", output);
+    }
+
     //Everything past here is implementing the ModelListener, so the test class can get feedback from the CPU.
 
     /**
@@ -530,7 +555,7 @@ class CPUTest implements ModelListener {
      */
     @Override
     public void output(String outText) {
-        output = outText;
+        output = output + outText;
     }
 
     /**
