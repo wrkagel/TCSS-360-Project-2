@@ -10,9 +10,14 @@ RJ Alabado, Walter Kagel, Taehong Kim
  * Executes all arithmetic operations for arithmetic instructions for the pep/8 simulator.
  * Stores flags based on the most recent operation.
  * @author Group 8, Lead: RJ Alabado
- * @version 10/26/2020
+ * @version 10/29/2020
  */
 public class ALU {
+	
+	/**
+	 * Controls how many shifts are computed
+	 */
+	static final int rotateVal = 1;
 
     /**
      * Stores if the last operation resulted in a negative value.
@@ -38,16 +43,40 @@ public class ALU {
      * Takes in two short values and returns their addition. Sets flags based on the result.
      * @return (short) (value1 + value2)
      */
-    public short add(short value1, short value2) {
-        return 0; //Placeholder return
+    public static short add(short value1, short value2) {
+        return (short) (value1 + value2);
+    }
+    
+    public static short sub(short value1, short value2) {
+        return (short) (value1 - value2);
     }
 
+    public static short and(short value1, short value2) {
+        return (short) (value1 & value2);
+    }
+    
+    public static short or(short value1, short value2) {
+        return (short) (value1 | value2);
+    }
+    
+    public static short arithShiftLeft(short value){
+    	return (short) ((value << rotateVal) | (value << 31));
+    }
+    
+    public static short arithShiftRight(short value){
+    	return (short) ((value >> rotateVal));
+    }
+    
+    public static short rotateLeft(short value){
+    	return (short) (Integer.rotateLeft(value, rotateVal));
+    }
+    
     /**
      * Takes in a short value and rotates the rightmost bit to the the leftmost bit using the carry bit as
      * an intermediary.
      * @return rotated value as a short
      */
-    public short rotateRight(short value){
-        return 0; //Placeholder return
+    public static short rotateRight(short value){
+    	return (short) (Integer.rotateRight(value, rotateVal));
     }
 }
