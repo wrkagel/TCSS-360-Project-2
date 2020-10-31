@@ -288,6 +288,7 @@ public class CPU {
         } else {
             operand.setShort(operandSpecifier.getShort());
         }
+        programCounter.setShort(operand.getShort());
         if (listener == null || !isStep) return;
         listener.registerUpdate("programCounter", programCounter.getShort());
         listener.registerUpdate("stackPointer", stackPointer.getShort());
