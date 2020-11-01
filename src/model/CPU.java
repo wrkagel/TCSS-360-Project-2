@@ -528,9 +528,10 @@ public class CPU {
                 accumulator.setShort(value1);
             }
         }
-        if(listener ==null || !isStep) return;
+        if(listener == null || !isStep) return;
         listener.registerUpdate("programCounter", programCounter.getShort());
         listener.registerUpdate("instructionSpecifier", instructionSpecifier.getShort());
+        listener.registerUpdate("stackPointer", stackPointer.getShort());
         listener.registerUpdate("operandSpecifier", operandSpecifier.getShort());
         listener.registerUpdate("operand", operand.getShort());
         listener.registerUpdate("accumulator", accumulator.getShort());
