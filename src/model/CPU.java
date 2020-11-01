@@ -154,7 +154,7 @@ public class CPU {
         } else if (instSpec < 24) {
             callSubroutine();
         } else if (instSpec < 36) {
-            unaryALUop();
+            unaryALUOp();
         } else if (instSpec < 48) {
             //no operation trap calls
         } else if (instSpec < 64) {
@@ -166,7 +166,7 @@ public class CPU {
         } else if (instSpec < 96) {
             returnFromCall();
         } else if (instSpec < 192) {
-            binaryALUop();
+            binaryALUOp();
         } else if (instSpec < 224) {
             load();
         } else if (instSpec < 256) {
@@ -301,10 +301,39 @@ public class CPU {
     /**
      * Performs an ALU operation that only has one input.
      */
-    private void unaryALUop() {
+    private void unaryALUOp() {
         int opCode = Short.toUnsignedInt(instructionSpecifier.getShort());
+        short value;
+        if ((instructionSpecifier.getShort() & 0x1) == 1) {
+            value = index.getShort();
+        } else {
+            value = accumulator.getShort();
+        }
         if (opCode < 26) {
-
+            //value = alu.not(value);
+            //set NZ
+        } else if (opCode < 28) {
+            //value = alu.neg(value);
+            //set NZV
+        } else if (opCode < 30) {
+            value = alu.arithShiftLeft(value);
+            //set NZVC
+        } else if (opCode < 32) {
+            value = alu.arithShiftRight(value);
+            //set NZC
+        } else if (opCode < 34) {
+            value = alu.rotateLeft(value);
+            //set C
+        } else if (opCode < 36) {
+            value = alu.rotateRight(value);
+            //set C
+        } else {
+            throw new IllegalStateException("Incorrectly went into unaryALUOp. Error in code.");
+        }
+        if ((instructionSpecifier.getShort() & 0x1) == 1) {
+            index.setShort(value);
+        } else {
+            accumulator.setShort(value);
         }
         if (listener == null || !isStep) return;
         listener.registerUpdate("programCounter", programCounter.getShort());
@@ -447,8 +476,58 @@ public class CPU {
     /**
      * Performs an ALU operation with two inputs.
      */
-    private void binaryALUop() {
-
+    private void binaryALUOp() {
+        operandSpecifier.setShort(mem.getShort(programCounter.getShort()));
+        programCounter.setShort((short) (programCounter.getShort() + 2));
+        int opCode = instructionSpecifier.getShort();
+        int mode = (opCode & 0x7);
+        int reg = (opCode & 0xF) >>> 3;
+        if (mode == 0) {
+            operand.setShort(operandSpecifier.getShort());
+        } else {
+            operand.setShort(getOperandAddress(AddressingMode.values()[mode]));
+        }
+        short value1;
+        if (opCode < 112) {
+            value1 = stackPointer.getShort();
+        } else if (reg == 1) {
+            value1 = index.getShort();
+        } else {
+            value1 = accumulator.getShort();
+        }
+        if (opCode < 104 ) {
+            value1 = alu.add(value1, operand.getShort());
+            //set NZVC
+        } else if (opCode < 112) {
+            value1 = alu.sub(value1, operand.getShort());
+            //set NZVC
+        } else if (opCode < 128) {
+            value1 = alu.add(value1, operand.getShort());
+            //set NZVC
+        } else if (opCode < 144) {
+            value1 = alu.sub(value1, operand.getShort());
+            //set NZVC
+        } else if (opCode < 160) {
+            value1 = alu.and(value1, operand.getShort());
+            //set NZ
+        } else if (opCode < 176) {
+            value1 = alu.or(value1, operand.getShort());
+            //set NZ
+        } else if (opCode < 192) {
+            value1 = alu.sub(value1, operand.getShort());
+            //set NZVC
+        } else {
+            throw new IllegalStateException("Incorrectly went into binaryALUOp. Error in code.");
+        }
+        if (opCode < 176) {
+            if (opCode < 112) {
+                stackPointer.setShort(value1);
+            } else if (reg == 1) {
+                index.setShort(value1);
+            } else {
+                accumulator.setShort(value1);
+            }
+        }
         if(listener ==null || !isStep) return;
         listener.registerUpdate("programCounter", programCounter.getShort());
         listener.registerUpdate("instructionSpecifier", instructionSpecifier.getShort());
