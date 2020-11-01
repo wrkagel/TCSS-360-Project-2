@@ -53,7 +53,9 @@ class CPUTest implements ModelListener {
         mem.setByte((short) 0, (byte) 0xC0);
         mem.setByte((short) 1, (byte) 0xA2);
         mem.setByte((short) 2, (byte) 0xCF);
+        mem.setByte((short) 3, (byte) 0x00);
         cpu.fetchExecute(true);
+        cpu.fetchExecute(false);
         String[] expectedNames = new String[] {"programCounter", "instructionSpecifier", "operandSpecifier",
                 "operand", "accumulator", "index", "negativeFlag", "zeroFlag"};
         short[] numberValues = new short[] {(short) 3, (short) 0x00C0, (short) 0xA2CF, (short) 0xA2CF,
@@ -248,6 +250,31 @@ class CPUTest implements ModelListener {
         }
         cpu.fetchExecute(false);
         assertEquals(testString, output);
+    }
+
+    /**
+     * Test that decimal input works with values that are not too large.
+     */
+    @Test
+    void decimalInput() {
+        mem.setByte((short) 0, (byte) 0x31);
+        mem.setByte((short) 1, (byte) 0x22);
+        mem.setByte((short) 2, (byte) 0x22);
+        input = "3456";
+        cpu.fetchExecute(false);
+        assertEquals((short) 3456, mem.getShort((short) 0x2222));
+    }
+
+    /**
+     * Test that decimal output works.
+     */
+    @Test
+    void decimalOutput() {
+        mem.setByte((short) 0, (byte) 0x38);
+        mem.setByte((short) 1, (byte) 0xFF);
+        mem.setByte((short) 2, (byte) 0xFF);
+        cpu.fetchExecute(false);
+        assertEquals("-1", output);
     }
 
     /**

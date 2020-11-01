@@ -357,7 +357,7 @@ public class CPU {
         operandSpecifier.setShort(mem.getShort(programCounter.getShort()));
         programCounter.setShort((short) (programCounter.getShort() + 2));
         int mode = instrSpec & 0x7;
-        boolean isInput = (instrSpec & 0x8) == 0x8;
+        boolean isInput = (instrSpec & 0x8) == 0;
         if (isInput) {
             if (mode == 0) throw new IllegalArgumentException("Illegal addressing mode for decimal input.");
             if (input.length() == 0) input = listener.getInput();
