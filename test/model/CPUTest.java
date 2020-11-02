@@ -556,7 +556,7 @@ class CPUTest implements ModelListener {
         mem.setByte((short) 1, (byte) 0x80);
         mem.setByte((short) 2, (byte) 0x00);
         mem.setByte((short) 3, (byte) 0x1D);
-        mem.setByte((short) 4, (byte) 0x12);
+        mem.setByte((short) 4, (byte) 0x14);
         mem.setByte((short) 5, (byte) 0xFF);
         mem.setByte((short) 6, (byte) 0x22);
         cpu.fetchExecute(false);
@@ -574,7 +574,7 @@ class CPUTest implements ModelListener {
         mem.setByte((short) 1, (byte) 0x30);
         mem.setByte((short) 2, (byte) 0x00);
         mem.setByte((short) 3, (byte) 0x1D);
-        mem.setByte((short) 4, (byte) 0x12);
+        mem.setByte((short) 4, (byte) 0x14);
         mem.setByte((short) 5, (byte) 0xFF);
         mem.setByte((short) 6, (byte) 0x22);
         cpu.fetchExecute(false);
