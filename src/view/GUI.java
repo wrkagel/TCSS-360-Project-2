@@ -161,7 +161,7 @@ public class GUI extends JFrame implements ActionListener{
     /**Setting screensize to calculate size of application**/
     private Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
     /**Tells which character of BatchIO to send**/
-//    private int batchIndex = -1;
+    private int batchIndex = -1;
     private JButton TraceButton;
     private JButton TraceButton2;
     private JCheckBox TraceChecker;
@@ -203,7 +203,7 @@ public class GUI extends JFrame implements ActionListener{
     private void UpPanel() {
         /*setting main UpPanel*/
         upPanel = new JPanel();
-        upPanel.setLayout(new GridLayout(1,9));
+        upPanel.setLayout(new GridLayout(1,7));
         upPanel.setPreferredSize(new Dimension (screenSize.width*3/4,screenSize.height*3/50));
         /*setting buttons on main upPanel*/
         final JButton newButton = new JButton("New");
@@ -212,7 +212,7 @@ public class GUI extends JFrame implements ActionListener{
         newButton.addActionListener(this);
         newButton.setPreferredSize(new Dimension (screenSize.width/12,screenSize.height*3/50));
 
-        JButton startButton = new JButton("Start");
+        JButton startButton = new JButton("Start Debugging");
         startButton.setFont(myFont);
         startButton.setBackground(Color.lightGray);
         startButton.addActionListener(this);
@@ -224,23 +224,17 @@ public class GUI extends JFrame implements ActionListener{
         saveButton.setFont(myFont);
         saveButton.setPreferredSize(new Dimension (screenSize.width/12,screenSize.height*3/50));
 
-        JButton runCodeButton = new JButton("Run CODE");
+        JButton runCodeButton = new JButton("Run Source");
         runCodeButton.setBackground(Color.lightGray);
         runCodeButton.addActionListener(this);
         runCodeButton.setFont(myFont);
         runCodeButton.setPreferredSize(new Dimension (screenSize.width/12,screenSize.height*3/50));
 
-        JButton unDoButton = new JButton("Undo");
-        unDoButton.setBackground(Color.lightGray);
-        unDoButton.setFont(myFont);
-        unDoButton.setEnabled(false);
-        unDoButton.setPreferredSize(new Dimension (screenSize.width/12,screenSize.height*3/50));
-
-        JButton reDoButton = new JButton("Redo");
-        reDoButton.setBackground(Color.lightGray);
-        reDoButton.setFont(myFont);
-        reDoButton.setEnabled(false);
-        reDoButton.setPreferredSize(new Dimension (screenSize.width/12,screenSize.height*3/50));
+        JButton assembleButton = new JButton("Assemble");
+        assembleButton.setBackground(Color.lightGray);
+        assembleButton.addActionListener(this);
+        assembleButton.setFont(myFont);
+        assembleButton.setPreferredSize(new Dimension (screenSize.width/12,screenSize.height*3/50));
 
         /*Setting empty panels to fill empty areas of upPanel*/
         JPanel emptyPanel = new JPanel();
@@ -249,14 +243,11 @@ public class GUI extends JFrame implements ActionListener{
         JPanel emptyPanel2 = new JPanel();
         emptyPanel2.setLayout(new GridLayout(1,1));
         emptyPanel2.setPreferredSize(new Dimension (screenSize.width/12,screenSize.height*3/50));
-        JPanel emptyPanel3 = new JPanel();
-        emptyPanel3.setLayout(new GridLayout(1,1));
-        emptyPanel3.setPreferredSize(new Dimension (screenSize.width/12,screenSize.height*3/50));
 
         /*Adding whole buttons in UpPanel*/
-        upPanel.add(newButton);upPanel.add(startButton);upPanel.add(saveButton);
-        upPanel.add(runCodeButton);upPanel.add(unDoButton);upPanel.add(reDoButton);
-        upPanel.add(emptyPanel);upPanel.add(emptyPanel2);upPanel.add(emptyPanel3);
+        upPanel.add(newButton);upPanel.add(runCodeButton); upPanel.add(saveButton);
+        upPanel.add(startButton);upPanel.add(assembleButton);
+        upPanel.add(emptyPanel);upPanel.add(emptyPanel2);
     }
 
     /**
@@ -312,12 +303,13 @@ public class GUI extends JFrame implements ActionListener{
         CpuPanel.setPreferredSize(new Dimension(screenSize.width/4,screenSize.height*3/14));
         /*setting  top Panel*/
         CpupanelTop = new JPanel();
-        CpupanelTop.setLayout(new GridLayout(1,8));
+        CpupanelTop.setLayout(new GridLayout(1,9));
         CpupanelTop.setSize(screenSize.width/4,screenSize.height*1/112);
         //setPreferredSize(new Dimension(screenSize.width/4,screenSize.height*1/112));
         /*Calling components for buttons, labels, and text areas.*/
         CpuChecker();
         downCpuPanel();
+
         AccumulatorPanel();
         IndexRegister();
         StackPointer();
@@ -325,10 +317,6 @@ public class GUI extends JFrame implements ActionListener{
         InstructionPanel();
         OperandSpecifier();
         Operand();
-        Trace();
-
-
-
         BatchIO();
     }
 
@@ -342,6 +330,7 @@ public class GUI extends JFrame implements ActionListener{
         Nmark.setSize(new Dimension(screenSize.width*1/112,screenSize.height*1/112));
         CpupanelTop.add(Nmark);
         JCheckBox Nbox = new JCheckBox();
+        Nbox.setEnabled(false);
         Nbox.setSize(new Dimension(screenSize.width*1/112,screenSize.height*1/112));
         CpupanelTop.add(Nbox);
 
@@ -351,6 +340,7 @@ public class GUI extends JFrame implements ActionListener{
         Zmark.setSize(new Dimension(screenSize.width*1/112,screenSize.height*1/112));
         CpupanelTop.add(Zmark);
         JCheckBox Zbox = new JCheckBox();
+        Zbox.setEnabled(false);
         Zbox.setSize(new Dimension(screenSize.width*1/112,screenSize.height*1/112));
         CpupanelTop.add(Zbox);
 
@@ -360,6 +350,7 @@ public class GUI extends JFrame implements ActionListener{
         Vmark.setSize(new Dimension(screenSize.width*1/112,screenSize.height*1/112));
         CpupanelTop.add(Vmark);
         JCheckBox Vbox = new JCheckBox();
+        Vbox.setEnabled(false);
         Vbox.setSize(new Dimension(screenSize.width*1/112,screenSize.height*1/112));
         CpupanelTop.add(Vbox);
 
@@ -369,6 +360,7 @@ public class GUI extends JFrame implements ActionListener{
         Cmark.setSize(new Dimension(screenSize.width*1/112,screenSize.height*1/112));
         CpupanelTop.add(Cmark);
         JCheckBox Cbox = new JCheckBox();
+        Cbox.setEnabled(false);
         Cbox.setSize(new Dimension(screenSize.width*1/112,screenSize.height*1/112));
         CpupanelTop.add(Cbox);
         CpuPanel.add(CpupanelTop,  BorderLayout.NORTH);
@@ -380,9 +372,9 @@ public class GUI extends JFrame implements ActionListener{
     private void downCpuPanel() {
         /*Setting down of CPU panel*/
         Cpupaneldown = new JPanel();
-        Cpupaneldown.setLayout(new GridLayout(9,3));
+        Cpupaneldown.setLayout(new GridLayout(8,3));
         Cpupaneldown.setPreferredSize(new Dimension(screenSize.width/4,screenSize.height*3/16));
-        CpuPanel.add(Cpupaneldown, BorderLayout.CENTER);
+        CpuPanel.add(Cpupaneldown, BorderLayout.NORTH);
     }
 
     /**
@@ -485,23 +477,7 @@ public class GUI extends JFrame implements ActionListener{
         Cpupaneldown.add(Operand2);
     }
 
-    private void Trace() {
-        TraceChecker = new JCheckBox("Trace");
-        TraceChecker.addActionListener(this);
-        TraceChecker.setFont(myFont2);
-        TraceChecker.setPreferredSize(new Dimension(screenSize.width/12,screenSize.height*3/112));
-        Cpupaneldown.add(TraceChecker);
-        TraceButton = new JButton("Single Step");
-        TraceButton.addActionListener(this);
-        TraceButton.setPreferredSize(new Dimension(screenSize.width/12,screenSize.height*3/112));
-        TraceButton.setFont(myFont2);
-        Cpupaneldown.add(TraceButton);
-        TraceButton2 = new JButton("Resume");
-        TraceButton2.addActionListener(this);
-        TraceButton2.setPreferredSize(new Dimension(screenSize.width/12,screenSize.height*3/112));
-        TraceButton2.setFont(myFont2);
-        Cpupaneldown.add(TraceButton2);
-    }
+
     /**
      * Constructor for Operand specifier labels, text areas.
      */
@@ -640,16 +616,14 @@ public class GUI extends JFrame implements ActionListener{
          */
         if (userinput.equals("New")) {
             ViewListner.buttonPushed("New");
-        } else if (userinput.equals("Start")) {
-            ViewListner.buttonPushed("Start");
+        } else if (userinput.equals("Run Source")) {
+            ViewListner.buttonPushed("Run Source");
         } else if (userinput.equals("Save")) {
             ViewListner.buttonPushed("Save");
-        } else if (userinput.equals("Run Code")) {
-            ViewListner.buttonPushed("Run Code");
-        } else if (userinput.equals("Undo")) {
-            ViewListner.buttonPushed("Undo");
-        } else if (userinput.equals("Redo")) {
-            ViewListner.buttonPushed("Redo");
+        } else if (userinput.equals("Start Debugging")) {
+            ViewListner.buttonPushed("Start Debugging");
+        } else if (userinput.equals("Assemble")) {
+            ViewListner.buttonPushed("Assemble");
         }
         /**
          * file menu input
@@ -675,74 +649,95 @@ public class GUI extends JFrame implements ActionListener{
         } else if (userinput.equals("Paste into Object Code")) {
             ViewListner.editSelection("Paste into Object Code");
         }
-        /**
-         * Trace menu input
-         */
-        else if (userinput.equals("Trace")){
-            ViewListner.traceSelection("Trace");
-        } else if (userinput.equals("Single Step")){
-            ViewListner.traceSelection("Single Step");
-        } else if (userinput.equals("Resume")){
-            ViewListner.traceSelection("Resume");
-        }
     }
-// Previous action listener components** saved for temporary.
-//    //Adding setters for textFields and adding getters for when input is needed.
-//
-//    /**
-//     * Sets the memory text area based on the copy of memory given by the Machine class.
-//     * @param memCopy byte array copy of the memory.
-//     */
-//    public void setMemText(byte[] memCopy) {
-//        StringBuilder sb = new StringBuilder();
-//        for (int i = 0; i < memCopy.length; i++) {
-//            if (i % 8 == 0) {
-//                sb.append("\n");
-//                String addrHex = String.format("%04x", i);
-//                sb.append(addrHex.toUpperCase());
-//                sb.append(": ");
-//            }
-//            String hex = String.format("%02x", memCopy[i]);
-//            sb.append(hex.toUpperCase());
-//            sb.append(" ");
-//        }
-//        sb.replace(0, 1, "");
-//        Memory.setText(sb.toString());
-//    }
-//
-//    /**
-//     * Sets the register text values according to the values passed in. Assumes the order is as listed below
-//     * @param registerValues short[] {InstrRegSpec, InstrRegOper, ProgCountReg, AccumReg}
-//     */
-//    public void setRegistersText(short[] registerValues) {
-//        String instrSpecHex = String.format("%04x", registerValues[0]);
-//        Instructionout1.setText(instrSpecHex.toUpperCase());
-//        String operandHex = String.format("%04x", registerValues[1]);
-//        Operand1.setText(operandHex.toUpperCase());
-//        Operand2.setText("" + registerValues[1]);
-//        String progCountHex = String.format("%04x", registerValues[2]);
-//        ProgramCounterout1.setText(progCountHex.toUpperCase());
-//        ProgramCounterout2.setText("" + registerValues[2]);
-//        String accumHex = String.format("%04x", registerValues[3]);
-//        Accumulatorout1.setText(accumHex.toUpperCase());
-//        Accumulatorout2.setText("" + registerValues[3]);
-//    }
-//
-//    /**
-//     * This returns the characters stored in the BatchIO text area one character at a time.
-//     * @return The next character from batch input based upon how many times this function has been called.
-//     */
-//    public char getBatchInput() {
-//        batchIndex++;
-//        return (BatchIO.getText()).charAt(batchIndex);
-//    }
-//
-//    /**
-//     * Adds the specified character to the output text area.
-//     * @param c
-//     */
-//    public void output(char c) {
-//        Outputtext.setText(Outputtext.getText() + c);
-//    }
 
+    /**
+     * setter for memory
+     * @param memory
+     */
+    public void setMemory(byte[] memory){
+        StringBuilder sb= new StringBuilder();
+        for (int i = 0; i < memory.length; i++) {
+            if (i % 8 == 0) {
+                sb.append("\n");
+                String addrHex = String.format("%04x", i);
+                sb.append(addrHex.toUpperCase());
+                sb.append(": ");
+            }
+            String hex = String.format("%02x", memory[i]);
+            sb.append(hex.toUpperCase());
+            sb.append(" ");
+        }
+        sb.replace(0, 1, "");
+        Memory.setText(sb.toString());
+    }
+
+    /**
+     * Setter for register information
+     * {Accumulator, IndexResigister, StackPointer,
+     * ProgramCounter, Instruction Specifier, Operand Specifier, Operand}
+     * @param registerList
+     */
+    public void setRegistersText(short[] registerList) {
+        String Accumulator = String.format("%04x", registerList[0]);
+        Accumulatorout1.setText(Accumulator.toUpperCase());
+        Accumulatorout2.setText(""+registerList[0]);
+
+        String IndexResigister = String.format("%04x", registerList[1]);
+        IndexRegister1.setText(Accumulator.toUpperCase());
+        IndexRegister2.setText(""+registerList[1]);
+
+        String StackPointer = String.format("%04x", registerList[2]);
+        StackPointer1.setText(Accumulator.toUpperCase());
+        StackPointer2.setText(""+registerList[2]);
+
+        String ProgramCounter = String.format("%04x", registerList[3]);
+        ProgramCounterout1.setText(Accumulator.toUpperCase());
+        ProgramCounterout2.setText(""+registerList[3]);
+
+        String InstructionSpecifier = String.format("%04x", registerList[4]);
+        Instructionout1.setText(Accumulator.toUpperCase());
+        Instructionout2.setText(""+registerList[4]);
+
+        String OperandSpecifier = String.format("%04x", registerList[5]);
+        OperandSpecifier1.setText(Accumulator.toUpperCase());
+        OperandSpecifier2.setText(""+registerList[5]);
+
+        String Operand = String.format("%04x", registerList[6]);
+        Operand1.setText(Accumulator.toUpperCase());
+        Operand2.setText(""+registerList[6]);
+    }
+
+    /**
+     * output setter
+     * @param c character
+     */
+    public void setoutput(char c) {
+        Outputtext.setText(Outputtext.getText() + c);
+    }
+
+    /**
+     * getter for object code
+     * @return shorts value of object code
+     */
+    public short getObjectCode(){
+        return short(Integer.parseInt(ObjCode.getText(),16));
+    }
+
+    /**
+     * Getter for source Code
+     * @return string of source code
+     */
+    public String getSourceCode(){
+        return sourceTab.getText();
+    }
+
+    /**
+     * getter batch input
+     * @return batch input character
+     */
+    public char getBatchInput(){
+        batchIndex++;
+        return BatchIO.getText().charAt(batchIndex);
+    }
 }
