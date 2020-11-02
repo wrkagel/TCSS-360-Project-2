@@ -183,19 +183,7 @@ public class CPU {
      * Informs the listener of the register updates of a stop instruction and then returns true.
      */
     private void stopInstruction() {
-        if (listener == null) return;
-        listener.registerUpdate("programCounter", programCounter.getShort());
-        listener.registerUpdate("instructionSpecifier", instructionSpecifier.getShort());
-        listener.registerUpdate("operandSpecifier", null);
-        listener.registerUpdate("operand", null);
-        listener.registerUpdate("accumulator", accumulator.getShort());
-        listener.registerUpdate("index", index.getShort());
-        listener.registerUpdate("stackPointer", stackPointer.getShort());
-        listener.flagUpdate("negativeFlag",  negativeFlag);
-        listener.flagUpdate("zeroFlag", zeroFlag);
-        listener.flagUpdate("overflowFlag", overflowFlag);
-        listener.flagUpdate("carryFlag", carryFlag);
-        listener.memoryUpdate(mem.getMemCopy());
+        if (listener == null) updateListener();
     }
 
     /**
@@ -204,12 +192,7 @@ public class CPU {
     private void moveSPtoAcc() {
         short value = stackPointer.getShort();
         accumulator.setShort(value);
-        if(listener == null || !isStep) return;
-        listener.registerUpdate("accumulator", value);
-        listener.registerUpdate("programCounter", programCounter.getShort());
-        listener.registerUpdate("instructionSpecifier", instructionSpecifier.getShort());
-        listener.registerUpdate("operandSpecifier", null);
-        listener.registerUpdate("operand", null);
+        if(listener != null && isStep) updateListener();
     }
 
     /**
@@ -222,12 +205,7 @@ public class CPU {
         if (overflowFlag) value += 2;
         if (carryFlag) value += 1;
         accumulator.setShort(value);
-        if (listener == null || !isStep) return;
-        listener.registerUpdate("accumulator", value);
-        listener.registerUpdate("programCounter", programCounter.getShort());
-        listener.registerUpdate("instructionSpecifier", instructionSpecifier.getShort());
-        listener.registerUpdate("operandSpecifier", null);
-        listener.registerUpdate("operand", null);
+        if (listener != null && isStep) updateListener();
     }
 
     /**
@@ -267,11 +245,7 @@ public class CPU {
         if (shouldBranch) {
             programCounter.setShort(operand.getShort());
         }
-        if (listener == null || !isStep) return;
-        listener.registerUpdate("programCounter", programCounter.getShort());
-        listener.registerUpdate("instructionSpecifier", instructionSpecifier.getShort());
-        listener.registerUpdate("operandSpecifier", operandSpecifier.getShort());
-        listener.registerUpdate("operand", operand.getShort());
+        if (listener != null && isStep) updateListener();
     }
 
     /**
@@ -289,13 +263,7 @@ public class CPU {
             operand.setShort(operandSpecifier.getShort());
         }
         programCounter.setShort(operand.getShort());
-        if (listener == null || !isStep) return;
-        listener.registerUpdate("programCounter", programCounter.getShort());
-        listener.registerUpdate("stackPointer", stackPointer.getShort());
-        listener.registerUpdate("instructionSpecifier", instructionSpecifier.getShort());
-        listener.registerUpdate("operandSpecifier", operandSpecifier.getShort());
-        listener.registerUpdate("operand", operand.getShort());
-        listener.memoryUpdate(mem.getMemCopy());
+        if (listener != null && isStep) updateListener();
     }
 
     /**
@@ -346,17 +314,7 @@ public class CPU {
         if (checkFlags[1]) zeroFlag = alu.getZeroFlag();
         if (checkFlags[2]) overflowFlag = alu.getOverflowFlag();
         if (checkFlags[3]) carryFlag = alu.getCarryFlag();
-        if (listener == null || !isStep) return;
-        listener.registerUpdate("programCounter", programCounter.getShort());
-        listener.registerUpdate("instructionSpecifier", instructionSpecifier.getShort());
-        listener.registerUpdate("operandSpecifier", null);
-        listener.registerUpdate("operand", null);
-        listener.registerUpdate("accumulator", accumulator.getShort());
-        listener.registerUpdate("index", index.getShort());
-        listener.flagUpdate("negativeFlag", negativeFlag);
-        listener.flagUpdate("zeroFlag", zeroFlag);
-        listener.flagUpdate("overflowFlag", overflowFlag);
-        listener.flagUpdate("carryFlag", carryFlag);
+        if (listener != null && isStep) updateListener();
     }
 
     /**
@@ -390,14 +348,7 @@ public class CPU {
             operand.setShort(oper);
             listener.output("" + oper);
         }
-        if (!isStep) return;
-        listener.registerUpdate("programCounter", programCounter.getShort());
-        listener.registerUpdate("instructionSpecifier", instructionSpecifier.getShort());
-        listener.registerUpdate("operandSpecifier", operandSpecifier.getShort());
-        listener.registerUpdate("operand", operand.getShort());
-        if (isInput) {
-            listener.memoryUpdate(mem.getMemCopy());
-        }
+        if (isStep) updateListener();
     }
 
     /**
@@ -422,11 +373,7 @@ public class CPU {
             out = mem.getByte(oper);
         }
         listener.output(sb.toString());
-        if (!isStep) return;
-        listener.registerUpdate("programCounter", programCounter.getShort());
-        listener.registerUpdate("instructionSpecifier", instructionSpecifier.getShort());
-        listener.registerUpdate("operandSpecifier", operandSpecifier.getShort());
-        listener.registerUpdate("operand", operand.getShort());
+        if (isStep) updateListener();
     }
 
     /**
@@ -458,14 +405,7 @@ public class CPU {
             operand.setByte(false, (byte) oper);
             listener.output("" + oper);
         }
-        if (!isStep) return;
-        listener.registerUpdate("programCounter", programCounter.getShort());
-        listener.registerUpdate("instructionSpecifier", instructionSpecifier.getShort());
-        listener.registerUpdate("operandSpecifier", operandSpecifier.getShort());
-        listener.registerUpdate("operand", operand.getShort());
-        if (isInput) {
-            listener.memoryUpdate(mem.getMemCopy());
-        }
+        if (isStep) updateListener();
     }
 
     /**
@@ -476,12 +416,7 @@ public class CPU {
         stackPointer.setShort((short) (stackPointer.getShort() + n));
         programCounter.setShort(mem.getShort(stackPointer.getShort()));
         stackPointer.setShort((short) (stackPointer.getShort() + 2));
-        if (listener == null || !isStep) return;
-        listener.registerUpdate("programCounter", programCounter.getShort());
-        listener.registerUpdate("stackPointer", stackPointer.getShort());
-        listener.registerUpdate("instructionSpecifier", instructionSpecifier.getShort());
-        listener.registerUpdate("operandSpecifier", null);
-        listener.registerUpdate("operand", null);
+        if (listener != null && isStep) updateListener();
     }
 
     /**
@@ -553,18 +488,7 @@ public class CPU {
         if (checkFlags[1]) zeroFlag = alu.getZeroFlag();
         if (checkFlags[2]) overflowFlag = alu.getOverflowFlag();
         if (checkFlags[3]) carryFlag = alu.getCarryFlag();
-        if(listener == null || !isStep) return;
-        listener.registerUpdate("programCounter", programCounter.getShort());
-        listener.registerUpdate("instructionSpecifier", instructionSpecifier.getShort());
-        listener.registerUpdate("stackPointer", stackPointer.getShort());
-        listener.registerUpdate("operandSpecifier", operandSpecifier.getShort());
-        listener.registerUpdate("operand", operand.getShort());
-        listener.registerUpdate("accumulator", accumulator.getShort());
-        listener.registerUpdate("index", index.getShort());
-        listener.flagUpdate("negativeFlag", negativeFlag);
-        listener.flagUpdate("zeroFlag", zeroFlag);
-        listener.flagUpdate("overflowFlag", overflowFlag);
-        listener.flagUpdate("carryFlag", carryFlag);
+        if(listener != null && isStep) updateListener();
     }
 
     /**
@@ -604,15 +528,7 @@ public class CPU {
         }
         negativeFlag = operand.getShort() < 0;
         zeroFlag = operand.getShort() == 0;
-        if (listener == null || !isStep) return;
-        listener.registerUpdate("programCounter", programCounter.getShort());
-        listener.registerUpdate("instructionSpecifier", instructionSpecifier.getShort());
-        listener.registerUpdate("operandSpecifier", operandSpecifier.getShort());
-        listener.registerUpdate("operand", operand.getShort());
-        listener.registerUpdate("accumulator", accumulator.getShort());
-        listener.registerUpdate("index", index.getShort());
-        listener.flagUpdate("negativeFlag", negativeFlag);
-        listener.flagUpdate("zeroFlag", zeroFlag);
+        if (listener != null && isStep) updateListener();
     }
 
     /**
@@ -645,12 +561,7 @@ public class CPU {
             }
             mem.setByte(address, operand.getByte(false));
         }
-        if (listener == null || !isStep) return;
-        listener.registerUpdate("programCounter", programCounter.getShort());
-        listener.registerUpdate("instructionSpecifier", instructionSpecifier.getShort());
-        listener.registerUpdate("operandSpecifier", operandSpecifier.getShort());
-        listener.registerUpdate("operand", operand.getShort());
-        listener.memoryUpdate(mem.getMemCopy());
+        if (listener != null && isStep) updateListener();
     }
 
     private short getOperandAddress(AddressingMode mode) {
@@ -677,6 +588,16 @@ public class CPU {
             case D -> {}
         }
         return address;
+    }
+
+    private void updateListener() {
+        short[] registerValues = new short[] {accumulator.getShort(), index.getShort(), stackPointer.getShort(),
+                programCounter.getShort(), instructionSpecifier.getShort(), operandSpecifier.getShort(),
+                operand.getShort()};
+        boolean[] flags = new boolean[] {negativeFlag, zeroFlag, overflowFlag, carryFlag};
+        listener.registerUpdate(registerValues);
+        listener.flagUpdate(flags);
+        listener.memoryUpdate(mem.getMemCopy());
     }
 
 }

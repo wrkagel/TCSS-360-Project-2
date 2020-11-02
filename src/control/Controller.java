@@ -10,6 +10,8 @@ import model.Assembler;
 import model.Machine;
 import view.GUI;
 
+import javax.swing.*;
+
 /**
  * Controls all communication and updating between the model and view packages. Updates the view when a change
  * in model has occurred. Calls appropriate functions upon a user action on the view.
@@ -33,32 +35,31 @@ public class Controller implements ModelListener, ViewListener {
 
     @Override
     public String getInput() {
-        return null;
+        return view.getBatchInput();
     }
 
     @Override
-    public void registerUpdate(String name, Short value) {
-
+    public void registerUpdate(short[] values) {
+        view.setRegistersText(values);
     }
 
     @Override
-    public void flagUpdate(String name, boolean value) {
-
+    public void flagUpdate(boolean[] values) {
     }
 
     @Override
     public void memoryUpdate(byte[] values) {
-
+        view.setMemory(values);
     }
 
     @Override
     public void output(String outText) {
-
+        view.setoutput(outText);
     }
 
     @Override
     public void errorMessage(String message) {
-
+        JOptionPane.showMessageDialog(view, message);
     }
 
     @Override
@@ -73,16 +74,5 @@ public class Controller implements ModelListener, ViewListener {
 
     @Override
     public void buildSelection(String name) {
-
-    }
-
-    @Override
-    public void editSelection(String name) {
-
-    }
-
-    @Override
-    public void traceSelection(String name) {
-
     }
 }

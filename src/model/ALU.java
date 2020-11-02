@@ -76,7 +76,7 @@ public class ALU {
     }
     
     public short arithShiftLeft(short value){
-    	short returnVal = (short) ((value << rotateVal) | (value << 31));
+    	short returnVal = (short) ((value << rotateVal));
     	checkNegative(returnVal);
     	checkZero(returnVal);
     	checkArithLeftOverflow(value, returnVal);
@@ -155,7 +155,7 @@ public class ALU {
     // Check methods for setting NZVC values
     
     public void checkNegative(short value) {
-    	if (value > 0) {
+    	if (value < 0) {
     		setNegativeFlag(true);
     	} else {
     		setNegativeFlag(false);

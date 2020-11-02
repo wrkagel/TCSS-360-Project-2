@@ -160,8 +160,6 @@ public class GUI extends JFrame implements ActionListener{
     private Scanner wordsScanner;
     /**Setting screensize to calculate size of application**/
     private Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-    /**Tells which character of BatchIO to send**/
-    private int batchIndex = -1;
     private JButton TraceButton;
     private JButton TraceButton2;
     private JCheckBox TraceChecker;
@@ -641,14 +639,14 @@ public class GUI extends JFrame implements ActionListener{
         } else if (userinput.equals("Run")) {
             ViewListner.buildSelection("Run");
         }
-        /**
-         * edit menu input
-         */
-        else if (userinput.equals("Cut Object Code")) {
-            ViewListner.editSelection("Cut Object Code");
-        } else if (userinput.equals("Paste into Object Code")) {
-            ViewListner.editSelection("Paste into Object Code");
-        }
+//        /**
+//         * edit menu input
+//         */
+//        else if (userinput.equals("Cut Object Code")) {
+//            ViewListner.editSelection("Cut Object Code");
+//        } else if (userinput.equals("Paste into Object Code")) {
+//            ViewListner.editSelection("Paste into Object Code");
+//        }
     }
 
     /**
@@ -712,7 +710,7 @@ public class GUI extends JFrame implements ActionListener{
      * output setter
      * @param c character
      */
-    public void setoutput(char c) {
+    public void setoutput(String c) {
         Outputtext.setText(Outputtext.getText() + c);
     }
 
@@ -736,8 +734,7 @@ public class GUI extends JFrame implements ActionListener{
      * getter batch input
      * @return batch input character
      */
-    public char getBatchInput(){
-        batchIndex++;
-        return BatchIO.getText().charAt(batchIndex);
+    public String getBatchInput(){
+        return BatchIO.getText();
     }
 }
