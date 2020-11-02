@@ -138,7 +138,7 @@ class CPUTest implements ModelListener {
         for (int i = 0; i < memInitial.length; i++) mem.setByte((short) i, memInitial[i]);
         //Fetch execute called twice to run both instructions.
         cpu.fetchExecute(false);
-        cpu.fetchExecute(false);
+        cpu.fetchExecute(true);
         assertEquals((short) 0x27FF, mem.getShort((short) 0x2953));
     }
 
@@ -153,7 +153,7 @@ class CPUTest implements ModelListener {
         for (int i = 0; i < memInitial.length; i++) mem.setByte((short) i, memInitial[i]);
         //Fetch execute called twice to run both instructions.
         cpu.fetchExecute(false);
-        cpu.fetchExecute(false);
+        cpu.fetchExecute(true);
         assertEquals((short) 0xD180, mem.getShort((short) 0xF700));
     }
 
@@ -165,7 +165,7 @@ class CPUTest implements ModelListener {
         for (int i = 0; i < memInitial.length; i++) mem.setByte((short) i, memInitial[i]);
         //Fetch execute called twice to run both instructions.
         cpu.fetchExecute(false);
-        cpu.fetchExecute(false);
+        cpu.fetchExecute(true);
         assertEquals((byte) 0xFF, mem.getByte((short) 0x2953));
         assertEquals((byte) 0x00, mem.getByte((short) 0x2954));
     }
@@ -178,7 +178,7 @@ class CPUTest implements ModelListener {
         for (int i = 0; i < memInitial.length; i++) mem.setByte((short) i, memInitial[i]);
         //Fetch execute called twice to run both instructions.
         cpu.fetchExecute(false);
-        cpu.fetchExecute(false);
+        cpu.fetchExecute(true);
         assertEquals((byte) 0x80, mem.getByte((short) 0xF700));
         assertEquals((byte) 0x00, mem.getByte((short) 0xF701));
     }
@@ -193,7 +193,7 @@ class CPUTest implements ModelListener {
                 (byte) 0x00};
         for (int i = 0; i < memInitial.length; i++) mem.setByte((short) i, memInitial[i]);
         //Fetch execute called twice to run both instructions.
-        cpu.fetchExecute(false);
+        cpu.fetchExecute(true);
         assertThrows(IllegalArgumentException.class, () -> cpu.fetchExecute(false));
     }
 
@@ -206,7 +206,7 @@ class CPUTest implements ModelListener {
         mem.setByte((short) 1, (byte) 0x00);
         mem.setByte((short) 2, (byte) 0x01);
         input = "y";
-        cpu.fetchExecute(false);
+        cpu.fetchExecute(true);
         assertEquals('y', (char) mem.getByte((short) 0x0001));
     }
 
@@ -218,7 +218,7 @@ class CPUTest implements ModelListener {
         mem.setByte((short) 0, (byte) 0x50);
         mem.setByte((short) 1, (byte) 0x00);
         mem.setByte((short) 2, (byte) 0x35);
-        cpu.fetchExecute(false);
+        cpu.fetchExecute(true);
         assertEquals("5", output);
     }
 
@@ -231,7 +231,7 @@ class CPUTest implements ModelListener {
         mem.setByte((short) 1, (byte) 0xA5);
         mem.setByte((short) 2, (byte) 0x11);
         mem.setByte((short) 0xA511, (byte) 0x0A);
-        cpu.fetchExecute(false);
+        cpu.fetchExecute(true);
         assertEquals("\n", output);
     }
 
@@ -248,7 +248,7 @@ class CPUTest implements ModelListener {
         for (int i = 0; i < testBytes.length; i++) {
             mem.setByte((short) (0x2222 + i), testBytes[i]);
         }
-        cpu.fetchExecute(false);
+        cpu.fetchExecute(true);
         assertEquals(testString, output);
     }
 
@@ -261,7 +261,7 @@ class CPUTest implements ModelListener {
         mem.setByte((short) 1, (byte) 0x22);
         mem.setByte((short) 2, (byte) 0x22);
         input = "3456";
-        cpu.fetchExecute(false);
+        cpu.fetchExecute(true);
         assertEquals((short) 3456, mem.getShort((short) 0x2222));
     }
 
@@ -273,7 +273,7 @@ class CPUTest implements ModelListener {
         mem.setByte((short) 0, (byte) 0x38);
         mem.setByte((short) 1, (byte) 0xFF);
         mem.setByte((short) 2, (byte) 0xFF);
-        cpu.fetchExecute(false);
+        cpu.fetchExecute(true);
         assertEquals("-1", output);
     }
 
@@ -512,6 +512,78 @@ class CPUTest implements ModelListener {
     }
 
     /**
+     * Tests the case that the branch for overflow flag should be taken works.
+     */
+    @Test
+    void branchOverflowTrue() {
+        mem.setByte((short) 0, (byte) 0xC8);
+        mem.setByte((short) 1, (byte) 0x70);
+        mem.setByte((short) 2, (byte) 0x00);
+        mem.setByte((short) 3, (byte) 0x1D);
+        mem.setByte((short) 4, (byte) 0x12);
+        mem.setByte((short) 5, (byte) 0xFF);
+        mem.setByte((short) 6, (byte) 0x22);
+        cpu.fetchExecute(false);
+        cpu.fetchExecute(false);
+        cpu.fetchExecute(true);
+        assertEquals((short) 0xFF22, cpuValues.get(0));
+    }
+
+    /**
+     * Tests the case that the branch for overflow flag should not be taken works.
+     */
+    @Test
+    void branchOverflowFalse() {
+        mem.setByte((short) 0, (byte) 0xC8);
+        mem.setByte((short) 1, (byte) 0x30);
+        mem.setByte((short) 2, (byte) 0x00);
+        mem.setByte((short) 3, (byte) 0x1D);
+        mem.setByte((short) 4, (byte) 0x12);
+        mem.setByte((short) 5, (byte) 0xFF);
+        mem.setByte((short) 6, (byte) 0x22);
+        cpu.fetchExecute(false);
+        cpu.fetchExecute(false);
+        cpu.fetchExecute(true);
+        assertEquals((short) 0x0007, cpuValues.get(0));
+    }
+
+    /**
+     * Tests the case that the branch for carry flag should be taken works.
+     */
+    @Test
+    void branchCarryTrue() {
+        mem.setByte((short) 0, (byte) 0xC8);
+        mem.setByte((short) 1, (byte) 0x80);
+        mem.setByte((short) 2, (byte) 0x00);
+        mem.setByte((short) 3, (byte) 0x1D);
+        mem.setByte((short) 4, (byte) 0x12);
+        mem.setByte((short) 5, (byte) 0xFF);
+        mem.setByte((short) 6, (byte) 0x22);
+        cpu.fetchExecute(false);
+        cpu.fetchExecute(false);
+        cpu.fetchExecute(true);
+        assertEquals((short) 0xFF22, cpuValues.get(0));
+    }
+
+    /**
+     * Tests the case that the branch for carry flag should not be taken works.
+     */
+    @Test
+    void branchCarryFalse() {
+        mem.setByte((short) 0, (byte) 0xC8);
+        mem.setByte((short) 1, (byte) 0x30);
+        mem.setByte((short) 2, (byte) 0x00);
+        mem.setByte((short) 3, (byte) 0x1D);
+        mem.setByte((short) 4, (byte) 0x12);
+        mem.setByte((short) 5, (byte) 0xFF);
+        mem.setByte((short) 6, (byte) 0x22);
+        cpu.fetchExecute(false);
+        cpu.fetchExecute(false);
+        cpu.fetchExecute(true);
+        assertEquals((short) 0x0007, cpuValues.get(0));
+    }
+
+    /**
      * Attempts to call and return from a subroutine. Should cause the word "Hi" to be into
      * output.
      */
@@ -527,9 +599,9 @@ class CPUTest implements ModelListener {
         mem.setByte((short) 0x5600, (byte) 0x00);
         mem.setByte((short) 0x5601, (byte) 0x48);
         mem.setByte((short) 0x5602, (byte) 0x58);
+        cpu.fetchExecute(true);
         cpu.fetchExecute(false);
-        cpu.fetchExecute(false);
-        cpu.fetchExecute(false);
+        cpu.fetchExecute(true);
         cpu.fetchExecute(false);
         assertEquals("Hi", output);
     }
@@ -707,6 +779,62 @@ class CPUTest implements ModelListener {
         cpu.fetchExecute(false);
         cpu.fetchExecute(true);
         assertEquals((short) 0x8000, cpuValues.get(5));
+    }
+
+    /**
+     * Tests that the unary ALU operations can set the negative flag.
+     */
+    @Test
+    void unaryALUNegativeFlag() {
+        mem.setByte((short) 0, (byte) 0xC8);
+        mem.setByte((short) 1, (byte) 0x70);
+        mem.setByte((short) 2, (byte) 0x00);
+        mem.setByte((short) 3, (byte) 0x1D);
+        cpu.fetchExecute(false);
+        cpu.fetchExecute(true);
+        assertTrue((boolean) cpuValues.get(6));
+    }
+
+    /**
+     * Tests that the unary ALU operations can set the overflow flag.
+     */
+    @Test
+    void unaryALUOverflowFlag() {
+        mem.setByte((short) 0, (byte) 0xC8);
+        mem.setByte((short) 1, (byte) 0x70);
+        mem.setByte((short) 2, (byte) 0x00);
+        mem.setByte((short) 3, (byte) 0x1D);
+        cpu.fetchExecute(false);
+        cpu.fetchExecute(true);
+        assertTrue((boolean) cpuValues.get(8));
+    }
+
+    /**
+     * Tests that the unary ALU operations can set the zero flag.
+     */
+    @Test
+    void unaryALUZeroFlag() {
+        mem.setByte((short) 0, (byte) 0xC8);
+        mem.setByte((short) 1, (byte) 0x80);
+        mem.setByte((short) 2, (byte) 0x00);
+        mem.setByte((short) 3, (byte) 0x1D);
+        cpu.fetchExecute(false);
+        cpu.fetchExecute(true);
+        assertTrue((boolean) cpuValues.get(7));
+    }
+
+    /**
+     * Tests that the unary ALU operations can set the carry flag.
+     */
+    @Test
+    void unaryALUCarryFlag() {
+        mem.setByte((short) 0, (byte) 0xC8);
+        mem.setByte((short) 1, (byte) 0x80);
+        mem.setByte((short) 2, (byte) 0x00);
+        mem.setByte((short) 3, (byte) 0x1D);
+        cpu.fetchExecute(false);
+        cpu.fetchExecute(true);
+        assertTrue((boolean) cpuValues.get(9));
     }
 
     /**
