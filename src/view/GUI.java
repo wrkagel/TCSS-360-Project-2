@@ -639,14 +639,14 @@ public class GUI extends JFrame implements ActionListener{
         } else if (userinput.equals("Run")) {
             ViewListner.buildSelection("Run");
         }
-        /**
-         * edit menu input
-         */
-        else if (userinput.equals("Cut Object Code")) {
-            ViewListner.editSelection("Cut Object Code");
-        } else if (userinput.equals("Paste into Object Code")) {
-            ViewListner.editSelection("Paste into Object Code");
-        }
+//        /**
+//         * edit menu input
+//         */
+//        else if (userinput.equals("Cut Object Code")) {
+//            ViewListner.editSelection("Cut Object Code");
+//        } else if (userinput.equals("Paste into Object Code")) {
+//            ViewListner.editSelection("Paste into Object Code");
+//        }
     }
 
     /**
@@ -710,7 +710,7 @@ public class GUI extends JFrame implements ActionListener{
      * output setter
      * @param c character
      */
-    public void setoutput(char c) {
+    public void setoutput(String c) {
         Outputtext.setText(Outputtext.getText() + c);
     }
 
