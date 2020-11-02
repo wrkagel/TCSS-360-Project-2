@@ -72,12 +72,12 @@ public class CPU {
     /**
      * Stores the value that the most recent instruction that can set the overflow flag has set it to.
      */
-    private final boolean overflowFlag;
+    private boolean overflowFlag;
 
     /**
      * Stores the value that the most recent instruction that can set the carry flag has set it to.
      */
-    private final boolean carryFlag;
+    private boolean carryFlag;
 
     /**
      * The cpu informs the listener when an update occurs to a stored value.
@@ -304,29 +304,36 @@ public class CPU {
     private void unaryALUOp() {
         int opCode = Short.toUnsignedInt(instructionSpecifier.getShort());
         short value;
+        boolean[] checkFlags;
         if ((instructionSpecifier.getShort() & 0x1) == 1) {
             value = index.getShort();
         } else {
             value = accumulator.getShort();
         }
         if (opCode < 26) {
-            //value = alu.not(value);
+            value = alu.not(value);
             //set NZ
+            checkFlags = new boolean[]{true, true, false, false};
         } else if (opCode < 28) {
-            //value = alu.neg(value);
+            value = alu.negation(value);
             //set NZV
+            checkFlags = new boolean[]{true, true, true, false};
         } else if (opCode < 30) {
             value = alu.arithShiftLeft(value);
             //set NZVC
+            checkFlags = new boolean[]{true, true, true, true};
         } else if (opCode < 32) {
             value = alu.arithShiftRight(value);
             //set NZC
+            checkFlags = new boolean[]{true, true, false, true};
         } else if (opCode < 34) {
             value = alu.rotateLeft(value);
             //set C
+            checkFlags = new boolean[]{false, false, false, true};
         } else if (opCode < 36) {
             value = alu.rotateRight(value);
             //set C
+            checkFlags = new boolean[]{false, false, false, true};
         } else {
             throw new IllegalStateException("Incorrectly went into unaryALUOp. Error in code.");
         }
@@ -335,6 +342,10 @@ public class CPU {
         } else {
             accumulator.setShort(value);
         }
+        if (checkFlags[0]) negativeFlag = alu.getNegativeFlag();
+        if (checkFlags[1]) zeroFlag = alu.getZeroFlag();
+        if (checkFlags[2]) overflowFlag = alu.getOverflowFlag();
+        if (checkFlags[3]) carryFlag = alu.getCarryFlag();
         if (listener == null || !isStep) return;
         listener.registerUpdate("programCounter", programCounter.getShort());
         listener.registerUpdate("instructionSpecifier", instructionSpecifier.getShort());
@@ -482,6 +493,8 @@ public class CPU {
         int opCode = instructionSpecifier.getShort();
         int mode = (opCode & 0x7);
         int reg = (opCode & 0xF) >>> 3;
+        //Check {negative, zero, overflow, carry}
+        boolean[] checkFlags;
         if (mode == 0) {
             operand.setShort(operandSpecifier.getShort());
         } else {
@@ -490,6 +503,7 @@ public class CPU {
         short value1;
         if (opCode < 112) {
             value1 = stackPointer.getShort();
+            checkFlags = new boolean[]{false, false, false, false};
         } else if (reg == 1) {
             value1 = index.getShort();
         } else {
@@ -498,24 +512,31 @@ public class CPU {
         if (opCode < 104 ) {
             value1 = alu.add(value1, operand.getShort());
             //set NZVC
+            checkFlags = new boolean[]{true, true, true, true};
         } else if (opCode < 112) {
             value1 = alu.sub(value1, operand.getShort());
             //set NZVC
+            checkFlags = new boolean[]{true, true, true, true};
         } else if (opCode < 128) {
             value1 = alu.add(value1, operand.getShort());
             //set NZVC
+            checkFlags = new boolean[]{true, true, true, true};
         } else if (opCode < 144) {
             value1 = alu.sub(value1, operand.getShort());
             //set NZVC
+            checkFlags = new boolean[]{true, true, true, true};
         } else if (opCode < 160) {
             value1 = alu.and(value1, operand.getShort());
             //set NZ
+            checkFlags = new boolean[]{true, true, false, false};
         } else if (opCode < 176) {
             value1 = alu.or(value1, operand.getShort());
             //set NZ
+            checkFlags = new boolean[]{true, true, false, false};
         } else if (opCode < 192) {
             value1 = alu.sub(value1, operand.getShort());
             //set NZVC
+            checkFlags = new boolean[]{true, true, true, true};
         } else {
             throw new IllegalStateException("Incorrectly went into binaryALUOp. Error in code.");
         }
@@ -528,6 +549,10 @@ public class CPU {
                 accumulator.setShort(value1);
             }
         }
+        if (checkFlags[0]) negativeFlag = alu.getNegativeFlag();
+        if (checkFlags[1]) zeroFlag = alu.getZeroFlag();
+        if (checkFlags[2]) overflowFlag = alu.getOverflowFlag();
+        if (checkFlags[3]) carryFlag = alu.getCarryFlag();
         if(listener == null || !isStep) return;
         listener.registerUpdate("programCounter", programCounter.getShort());
         listener.registerUpdate("instructionSpecifier", instructionSpecifier.getShort());
