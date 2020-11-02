@@ -53,7 +53,9 @@ class CPUTest implements ModelListener {
         mem.setByte((short) 0, (byte) 0xC0);
         mem.setByte((short) 1, (byte) 0xA2);
         mem.setByte((short) 2, (byte) 0xCF);
+        mem.setByte((short) 3, (byte) 0x00);
         cpu.fetchExecute(true);
+        cpu.fetchExecute(false);
         String[] expectedNames = new String[] {"programCounter", "instructionSpecifier", "operandSpecifier",
                 "operand", "accumulator", "index", "negativeFlag", "zeroFlag"};
         short[] numberValues = new short[] {(short) 3, (short) 0x00C0, (short) 0xA2CF, (short) 0xA2CF,
@@ -248,6 +250,31 @@ class CPUTest implements ModelListener {
         }
         cpu.fetchExecute(false);
         assertEquals(testString, output);
+    }
+
+    /**
+     * Test that decimal input works with values that are not too large.
+     */
+    @Test
+    void decimalInput() {
+        mem.setByte((short) 0, (byte) 0x31);
+        mem.setByte((short) 1, (byte) 0x22);
+        mem.setByte((short) 2, (byte) 0x22);
+        input = "3456";
+        cpu.fetchExecute(false);
+        assertEquals((short) 3456, mem.getShort((short) 0x2222));
+    }
+
+    /**
+     * Test that decimal output works.
+     */
+    @Test
+    void decimalOutput() {
+        mem.setByte((short) 0, (byte) 0x38);
+        mem.setByte((short) 1, (byte) 0xFF);
+        mem.setByte((short) 2, (byte) 0xFF);
+        cpu.fetchExecute(false);
+        assertEquals("-1", output);
     }
 
     /**
@@ -505,6 +532,367 @@ class CPUTest implements ModelListener {
         cpu.fetchExecute(false);
         cpu.fetchExecute(false);
         assertEquals("Hi", output);
+    }
+
+    /**
+     * Tests that the NOT operation works with the accumulator register.
+     */
+    @Test
+    void notAccumulator() {
+        mem.setByte((short) 0, (byte) 0xC0);
+        mem.setByte((short) 1, (byte) 0xF0);
+        mem.setByte((short) 2, (byte) 0xF0);
+        mem.setByte((short) 3, (byte) 0x18);
+        cpu.fetchExecute(false);
+        cpu.fetchExecute(true);
+        assertEquals((short) 0x0F0F, cpuValues.get(4));
+    }
+
+
+    /**
+     * Tests that the NOT operation works with the index register.
+     */
+    @Test
+    void notIndex() {
+        mem.setByte((short) 0, (byte) 0xC8);
+        mem.setByte((short) 1, (byte) 0xF0);
+        mem.setByte((short) 2, (byte) 0xF0);
+        mem.setByte((short) 3, (byte) 0x19);
+        cpu.fetchExecute(false);
+        cpu.fetchExecute(true);
+        assertEquals((short) 0x0F0F, cpuValues.get(5));
+    }
+
+
+    /**
+     * Tests that the NEG operation works with the accumulator register.
+     */
+    @Test
+    void negAccumulator() {
+        mem.setByte((short) 0, (byte) 0xC0);
+        mem.setByte((short) 1, (byte) 0x00);
+        mem.setByte((short) 2, (byte) 0x01);
+        mem.setByte((short) 3, (byte) 0x1A);
+        cpu.fetchExecute(false);
+        cpu.fetchExecute(true);
+        assertEquals((short) 0xFFFF, cpuValues.get(4));
+    }
+
+
+    /**
+     * Tests that the NEG operation works with the index register.
+     */
+    @Test
+    void negIndex() {
+        mem.setByte((short) 0, (byte) 0xC8);
+        mem.setByte((short) 1, (byte) 0xFF);
+        mem.setByte((short) 2, (byte) 0xFF);
+        mem.setByte((short) 3, (byte) 0x1B);
+        cpu.fetchExecute(false);
+        cpu.fetchExecute(true);
+        assertEquals((short) 0x0001, cpuValues.get(5));
+    }
+
+    /**
+     * Tests that the ASL operation works with the accumulator register.
+     */
+    @Test
+    void aslAccumulator() {
+        mem.setByte((short) 0, (byte) 0xC0);
+        mem.setByte((short) 1, (byte) 0x00);
+        mem.setByte((short) 2, (byte) 0x01);
+        mem.setByte((short) 3, (byte) 0x1C);
+        cpu.fetchExecute(false);
+        cpu.fetchExecute(true);
+        assertEquals((short) 0x0002, cpuValues.get(4));
+    }
+
+
+    /**
+     * Tests that the ASL operation works with the index register.
+     */
+    @Test
+    void aslIndex() {
+        mem.setByte((short) 0, (byte) 0xC8);
+        mem.setByte((short) 1, (byte) 0x08);
+        mem.setByte((short) 2, (byte) 0x00);
+        mem.setByte((short) 3, (byte) 0x1D);
+        cpu.fetchExecute(false);
+        cpu.fetchExecute(true);
+        assertEquals((short) 0x1000, cpuValues.get(5));
+    }
+
+    /**
+     * Tests that the ASR operation works with the accumulator register.
+     */
+    @Test
+    void asrAccumulator() {
+        mem.setByte((short) 0, (byte) 0xC0);
+        mem.setByte((short) 1, (byte) 0x00);
+        mem.setByte((short) 2, (byte) 0x08);
+        mem.setByte((short) 3, (byte) 0x1E);
+        cpu.fetchExecute(false);
+        cpu.fetchExecute(true);
+        assertEquals((short) 0x0004, cpuValues.get(4));
+    }
+
+
+    /**
+     * Tests that the ASR operation works with the index register.
+     */
+    @Test
+    void asrIndex() {
+        mem.setByte((short) 0, (byte) 0xC8);
+        mem.setByte((short) 1, (byte) 0xF0);
+        mem.setByte((short) 2, (byte) 0x00);
+        mem.setByte((short) 3, (byte) 0x1F);
+        cpu.fetchExecute(false);
+        cpu.fetchExecute(true);
+        assertEquals((short) 0xF800, cpuValues.get(5));
+    }
+
+    /**
+     * Tests that the ROL operation works with the accumulator register.
+     */
+    @Test
+    void rolAccumulator() {
+        mem.setByte((short) 0, (byte) 0xC0);
+        mem.setByte((short) 1, (byte) 0x80);
+        mem.setByte((short) 2, (byte) 0x00);
+        mem.setByte((short) 3, (byte) 0x20);
+        cpu.fetchExecute(false);
+        cpu.fetchExecute(true);
+        assertEquals((short) 0x0001, cpuValues.get(4));
+    }
+
+
+    /**
+     * Tests that the ROL operation works with the index register.
+     */
+    @Test
+    void rolIndex() {
+        mem.setByte((short) 0, (byte) 0xC8);
+        mem.setByte((short) 1, (byte) 0x00);
+        mem.setByte((short) 2, (byte) 0x01);
+        mem.setByte((short) 3, (byte) 0x21);
+        cpu.fetchExecute(false);
+        cpu.fetchExecute(true);
+        assertEquals((short) 0x0002, cpuValues.get(5));
+    }
+
+    /**
+     * Tests that the ROR operation works with the accumulator register.
+     */
+    @Test
+    void rorAccumulator() {
+        mem.setByte((short) 0, (byte) 0xC0);
+        mem.setByte((short) 1, (byte) 0x80);
+        mem.setByte((short) 2, (byte) 0x00);
+        mem.setByte((short) 3, (byte) 0x22);
+        cpu.fetchExecute(false);
+        cpu.fetchExecute(true);
+        assertEquals((short) 0x6000, cpuValues.get(4));
+    }
+
+
+    /**
+     * Tests that the ROR operation works with the index register.
+     */
+    @Test
+    void rorIndex() {
+        mem.setByte((short) 0, (byte) 0xC8);
+        mem.setByte((short) 1, (byte) 0x00);
+        mem.setByte((short) 2, (byte) 0x01);
+        mem.setByte((short) 3, (byte) 0x23);
+        cpu.fetchExecute(false);
+        cpu.fetchExecute(true);
+        assertEquals((short) 0x8000, cpuValues.get(5));
+    }
+
+    /**
+     * Tests that the add to stack pointer call works.
+     */
+    @Test
+    void addSP() {
+        mem.setByte((short) 0, (byte) 0x60);
+        mem.setByte((short) 1, (byte) 0x00);
+        mem.setByte((short) 2, (byte) 0x01);
+        cpu.fetchExecute(true);
+        assertEquals((short) 0xFBD0, cpuValues.get(2));
+    }
+
+    /**
+     * Tests that the subtract from stack pointer call works
+     */
+    @Test
+    void subSP() {
+        mem.setByte((short) 0, (byte) 0x68);
+        mem.setByte((short) 1, (byte) 0x00);
+        mem.setByte((short) 2, (byte) 0x01);
+        cpu.fetchExecute(true);
+        assertEquals((short) 0xFBCE, cpuValues.get(2));
+    }
+
+    /**
+     * Tests that add works with the accumulator register.
+     */
+    @Test
+    void addAccumulator() {
+        mem.setByte((short) 0, (byte) 0xC0);
+        mem.setByte((short) 1, (byte) 0x11);
+        mem.setByte((short) 2, (byte) 0x11);
+        mem.setByte((short) 3, (byte) 0x70);
+        mem.setByte((short) 4, (byte) 0x77);
+        mem.setByte((short) 5, (byte) 0x77);
+        cpu.fetchExecute(false);
+        cpu.fetchExecute(true);
+        assertEquals((short) 0x8888, cpuValues.get(5));
+    }
+
+    /**
+     * Tests that add works with the index register.
+     */
+    @Test
+    void addIndex() {
+        mem.setByte((short) 0, (byte) 0xC8);
+        mem.setByte((short) 1, (byte) 0x22);
+        mem.setByte((short) 2, (byte) 0x22);
+        mem.setByte((short) 3, (byte) 0x78);
+        mem.setByte((short) 4, (byte) 0x11);
+        mem.setByte((short) 5, (byte) 0x11);
+        cpu.fetchExecute(false);
+        cpu.fetchExecute(true);
+        assertEquals((short) 0x3333, cpuValues.get(6));
+    }
+
+    /**
+     * Tests that subtract works with the accumulator register.
+     */
+    @Test
+    void subAccumulator() {
+        mem.setByte((short) 0, (byte) 0xC0);
+        mem.setByte((short) 1, (byte) 0x71);
+        mem.setByte((short) 2, (byte) 0x71);
+        mem.setByte((short) 3, (byte) 0x80);
+        mem.setByte((short) 4, (byte) 0x20);
+        mem.setByte((short) 5, (byte) 0x20);
+        cpu.fetchExecute(false);
+        cpu.fetchExecute(true);
+        assertEquals((short) 0x5151, cpuValues.get(5));
+    }
+
+    /**
+     * Tests that subtract works with the index register.
+     */
+    @Test
+    void subIndex() {
+        mem.setByte((short) 0, (byte) 0xC8);
+        mem.setByte((short) 1, (byte) 0xFF);
+        mem.setByte((short) 2, (byte) 0xFF);
+        mem.setByte((short) 3, (byte) 0x88);
+        mem.setByte((short) 4, (byte) 0xFF);
+        mem.setByte((short) 5, (byte) 0x0F);
+        cpu.fetchExecute(false);
+        cpu.fetchExecute(true);
+        assertEquals((short) 0x00F0, cpuValues.get(6));
+    }
+
+    /**
+     * Tests that AND works with the accumulator register.
+     */
+    @Test
+    void andAccumulator() {
+        mem.setByte((short) 0, (byte) 0xC0);
+        mem.setByte((short) 1, (byte) 0x71);
+        mem.setByte((short) 2, (byte) 0x71);
+        mem.setByte((short) 3, (byte) 0x90);
+        mem.setByte((short) 4, (byte) 0x50);
+        mem.setByte((short) 5, (byte) 0x81);
+        cpu.fetchExecute(false);
+        cpu.fetchExecute(true);
+        assertEquals((short) 0x5001, cpuValues.get(5));
+    }
+
+    /**
+     * Tests that AND works with the index register.
+     */
+    @Test
+    void andIndex() {
+        mem.setByte((short) 0, (byte) 0xC8);
+        mem.setByte((short) 1, (byte) 0x8F);
+        mem.setByte((short) 2, (byte) 0xFF);
+        mem.setByte((short) 3, (byte) 0x98);
+        mem.setByte((short) 4, (byte) 0xF8);
+        mem.setByte((short) 5, (byte) 0x0F);
+        cpu.fetchExecute(false);
+        cpu.fetchExecute(true);
+        assertEquals((short) 0x880F, cpuValues.get(6));
+    }
+
+    /**
+     * Tests that OR works with the accumulator register.
+     */
+    @Test
+    void orAccumulator() {
+        mem.setByte((short) 0, (byte) 0xC0);
+        mem.setByte((short) 1, (byte) 0x21);
+        mem.setByte((short) 2, (byte) 0x21);
+        mem.setByte((short) 3, (byte) 0xA0);
+        mem.setByte((short) 4, (byte) 0x50);
+        mem.setByte((short) 5, (byte) 0x81);
+        cpu.fetchExecute(false);
+        cpu.fetchExecute(true);
+        assertEquals((short) 0x71A1, cpuValues.get(5));
+    }
+
+    /**
+     * Tests that OR works with the index register.
+     */
+    @Test
+    void orIndex() {
+        mem.setByte((short) 0, (byte) 0xC8);
+        mem.setByte((short) 1, (byte) 0x0A);
+        mem.setByte((short) 2, (byte) 0x0A);
+        mem.setByte((short) 3, (byte) 0xA8);
+        mem.setByte((short) 4, (byte) 0xF0);
+        mem.setByte((short) 5, (byte) 0xFE);
+        cpu.fetchExecute(false);
+        cpu.fetchExecute(true);
+        assertEquals((short) 0xFAFE, cpuValues.get(6));
+    }
+
+    /**
+     * Tests that compare works with the accumulator register.
+     */
+    @Test
+    void cmpAccumulator() {
+        mem.setByte((short) 0, (byte) 0xC0);
+        mem.setByte((short) 1, (byte) 0xAC);
+        mem.setByte((short) 2, (byte) 0xAC);
+        mem.setByte((short) 3, (byte) 0xB0);
+        mem.setByte((short) 4, (byte) 0xAC);
+        mem.setByte((short) 5, (byte) 0xAC);
+        cpu.fetchExecute(false);
+        cpu.fetchExecute(true);
+        assertEquals((short) 0xACAC, cpuValues.get(5));
+        //Need to check Z flag once implemented.
+    }
+
+    /**
+     * Tests that compare works with the index register.
+     */
+    @Test
+    void cmpIndex() {
+        mem.setByte((short) 0, (byte) 0xC8);
+        mem.setByte((short) 1, (byte) 0x00);
+        mem.setByte((short) 2, (byte) 0x01);
+        mem.setByte((short) 3, (byte) 0xB8);
+        mem.setByte((short) 4, (byte) 0x11);
+        mem.setByte((short) 5, (byte) 0x10);
+        cpu.fetchExecute(false);
+        cpu.fetchExecute(true);
+        assertEquals((short) 0x0001, cpuValues.get(6));
+        //check N flag once implemented.
     }
 
     //Everything past here is implementing the ModelListener, so the test class can get feedback from the CPU.

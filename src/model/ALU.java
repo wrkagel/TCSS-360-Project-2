@@ -22,77 +22,77 @@ public class ALU {
     /**
      * Stores if the last operation resulted in a negative value.
      */
-    private static boolean negativeFlag = false;
+    private boolean negativeFlag = false;
 
     /**
      * Stores if the last operation resulted in a zero value.
      */
-    private static boolean zeroFlag = true;
+    private boolean zeroFlag = true;
 
     /**
      * Stores if the last operation caused on overflow.
      */
-    private static boolean overflowFlag = false;
+    private boolean overflowFlag = false;
 
     /**
      * Stores the carry bit for the last operation.
      */
-    private static boolean carryFlag = false;
+    private boolean carryFlag = false;
 
     /**
      * Takes in two short values and returns their addition. Sets flags based on the result.
      * @return (short) (value1 + value2)
      */
-    public static short add(short value1, short value2) {
+    public short add(short value1, short value2) {
         short returnVal = (short) (value1 + value2);
         checkNegative(returnVal);
         checkZero(returnVal);
-        checkOverflow(value1, value2);
+        checkOverflow(value1, value2, returnVal);
         checkCarry(value1, value2);
         return returnVal;
     }
     
-    public static short sub(short value1, short value2) {
+    public short sub(short value1, short value2) {
     	short returnVal = (short) (value1 - value2);
     	checkNegative(returnVal);
     	checkZero(returnVal);
-    	checkOverflow(value1, value2);
+    	checkOverflow(value1, value2, returnVal);
     	checkCarry(value1, value2);
     	return returnVal;
     }
 
-    public static short and(short value1, short value2) {
+    public short and(short value1, short value2) {
     	short returnVal = (short) (value1 & value2);
     	checkNegative(returnVal);
     	checkZero(returnVal);
     	return returnVal;
     }
     
-    public static short or(short value1, short value2) {
+    public short or(short value1, short value2) {
     	short returnVal = (short) (value1 | value2);
     	checkNegative(returnVal);
     	checkZero(returnVal);
     	return returnVal;
     }
     
-    public static short arithShiftLeft(short value){
+    public short arithShiftLeft(short value){
     	short returnVal = (short) ((value << rotateVal) | (value << 31));
     	checkNegative(returnVal);
     	checkZero(returnVal);
-    	//checkOverflow---------------------------------------------
+    	checkArithLeftOverflow(value, returnVal);
     	return returnVal;
     }
     
-    public static short arithShiftRight(short value){
+    public short arithShiftRight(short value){
     	short returnVal = (short) ((value >> rotateVal));
     	checkNegative(returnVal);
     	checkZero(returnVal);
     	return returnVal;
     }
     
-    public static short rotateLeft(short value){
+    public short rotateLeft(short value){
     	short returnVal = (short) (Integer.rotateLeft(value, rotateVal));
-    	//checkCarry------------------------------------------------
+    	checkRotateLeftCarry(value);
     	return returnVal;
     }
     
@@ -101,25 +101,72 @@ public class ALU {
      * an intermediary.
      * @return rotated value as a short
      */
-    public static short rotateRight(short value) {
+    public short rotateRight(short value) {
     	short returnVal = (short) (Integer.rotateRight(value, rotateVal));
-    	//checkCarry------------------------------------------------
+    	checkRotateRightCarry(value);
     	return returnVal;
     }
     
-    private static void checkNegative(short value) {
+    public short not(short value) {
+    	short returnVal = (short) (~value);
+    	return returnVal;
+    }
+    
+    public short negation(short value) {
+    	return 0;
+    }
+    
+    //---------------------------------------------------------------------------------------------
+    // Getters and Setters
+    
+    public boolean getNegativeFlag() {
+    	return negativeFlag;
+    }
+    
+    public boolean getZeroFlag() {
+    	return zeroFlag;
+    }
+    
+    public boolean getOverflowFlag() {
+    	return overflowFlag;
+    }
+    
+    public boolean getCarryFlag() {
+    	return carryFlag;
+    }
+    
+    private void setNegativeFlag(boolean val) {
+    	negativeFlag = val;
+    }
+    
+    private void setZeroFlag(boolean val) {
+    	zeroFlag = val;
+    }
+    
+    private void setOverflowFlag(boolean val) {
+    	overflowFlag = val;
+    }
+    
+    private void setCarryFlag(boolean val) {
+    	carryFlag = val;
+    }
+    
+    //---------------------------------------------------------------------------------------------
+    // Check methods for setting NZVC values
+    
+    public void checkNegative(short value) {
     	if (value > 0) {
-    		negativeFlag = true;
+    		setNegativeFlag(true);
     	} else {
-    		negativeFlag = false;
+    		setNegativeFlag(false);
     	}
     }
     
-    private static void checkZero(short value) {
+    public void checkZero(short value) {
     	if (value == 0) {
-    		zeroFlag = true;
+    		setZeroFlag(true);
     	} else {
-    		zeroFlag = false;
+    		setZeroFlag(false);
     	}
     }
     
@@ -129,45 +176,48 @@ public class ALU {
      * @param value1
      * @param value2
      */
-    private static void checkOverflow(short value1, short value2) {
-    	if ((value1 > 0 && value2 > 0) && (value1 + value2 < 0)) {
-    		overflowFlag = true;
-    	} else if ((value1 < 0 && value2 < 0) && (value1 + value2 > 0)) {
-    		overflowFlag = true;
+    private void checkOverflow(short value1, short value2, short returnVal) {
+    	if ((value1 > 0 && value2 > 0) && (returnVal < 0)) {
+    		setOverflowFlag(true);
+    	} else if ((value1 < 0 && value2 < 0) && (returnVal > 0)) {
+    		setOverflowFlag(true);
     	} else {
-    		overflowFlag = false;
+    		setOverflowFlag(false);
     	}
     }
   
-    
-    /**
-     * Not sure if this works, probably not(?)
-     * made specifically for arithShiftLeft because of one parameter
-     * @param returnVal
-     */
-    /*
-    private static void checkOverflow(short returnVal) {
-    	if (returnVal > 0) {
-    		overflowFlag = true;
-    	} else if (returnVal < 0) {
-    		overflowFlag = false;
-    	}
-    }
-    */
-    
-    
-    /**
-     * Not sure if this is correct,
-     * have to make one that takes in only one paraemeter (for rotateL and rotateR)
-     * or have to make a whole new one if incorrect
-     * @param value1
-     * @param value2
-     */
-    private static void checkCarry(short value1, short value2) {
-    	if (Integer.compareUnsigned(value1, value2) > 0) {
-    		carryFlag = false;
+    private void checkArithLeftOverflow(short value, short returnVal) {
+    	if ((value > 0) && (returnVal < 0)) {
+    		setOverflowFlag(true);
+    	} else if ((value < 0) && (returnVal > 0)) {
+    		setOverflowFlag(true);
     	} else {
-    		carryFlag = true;
+    		setOverflowFlag(false);
     	}
     }
+    
+      private void checkCarry(short value1, short value2) {
+    	if (Integer.compareUnsigned(value1, value2) == 0) {
+    		setCarryFlag(true);
+    	} else {
+    		setCarryFlag(false);
+    	}
+    }
+      
+      private void checkRotateLeftCarry(short value) {
+    	  if (Integer.toBinaryString(value).charAt(0) == '1') {
+    		  setCarryFlag(true);
+    	  } else {
+    		  setCarryFlag(false);
+    	  }
+      }
+      
+      private void checkRotateRightCarry(short value) {
+    	  if ((Integer.toBinaryString(value)).charAt(Integer.toBinaryString(value).length() - 1) == '1') {
+    		  setCarryFlag(true);
+    	  } else {
+    		  setCarryFlag(false);
+    	  }
+      }
+    
 }
