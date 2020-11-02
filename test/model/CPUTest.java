@@ -56,18 +56,15 @@ class CPUTest implements ModelListener {
         mem.setByte((short) 3, (byte) 0x00);
         cpu.fetchExecute(true);
         cpu.fetchExecute(false);
-        String[] expectedNames = new String[] {"programCounter", "instructionSpecifier", "operandSpecifier",
-                "operand", "accumulator", "index", "negativeFlag", "zeroFlag"};
-        short[] numberValues = new short[] {(short) 3, (short) 0x00C0, (short) 0xA2CF, (short) 0xA2CF,
-                (short) 0xA2CF, (short) 0};
-        for (int i = 0; i < 6; i++) {
-            assertEquals(expectedNames[i], names.get(i));
+        short[] numberValues = new short[] {(short) 0xA2CF, (short) 0, (short) 0xFBCF, (short) 3, (short) 0x00C0,
+                (short) 0xA2CF, (short) 0xA2CF};
+        for (int i = 0; i < 7; i++) {
             assertEquals(numberValues[i], (short) cpuValues.get(i));
         }
-        assertEquals(expectedNames[6], names.get(6));
-        assertEquals(expectedNames[7], names.get(7));
-        assertTrue((boolean) cpuValues.get(6));
-        assertFalse((boolean) cpuValues.get(7));
+        assertTrue((boolean) cpuValues.get(7));
+        assertFalse((boolean) cpuValues.get(8));
+        assertFalse((boolean) cpuValues.get(9));
+        assertFalse((boolean) cpuValues.get(10));
     }
 
     /**
@@ -80,7 +77,7 @@ class CPUTest implements ModelListener {
         mem.setByte((short) 2, (byte) 0x04);
         mem.setShort((short) 4, (short) 0x0F01);
         cpu.fetchExecute(true);
-        assertEquals((short) 0x0F01, (short) cpuValues.get(4));
+        assertEquals((short) 0x0F01, (short) cpuValues.get(0));
     }
 
     /**
@@ -92,7 +89,7 @@ class CPUTest implements ModelListener {
         mem.setByte((short) 1, (byte) 0xA2);
         mem.setByte((short) 2, (byte) 0xCF);
         cpu.fetchExecute(true);
-        assertEquals((short) 0xA2CF, (short) cpuValues.get(5));
+        assertEquals((short) 0xA2CF, (short) cpuValues.get(1));
     }
 
     /**
@@ -108,7 +105,7 @@ class CPUTest implements ModelListener {
         mem.setByte((short) 5, (byte) 0xF2);
         cpu.fetchExecute(false);
         cpu.fetchExecute(true);
-        assertEquals((short) 0x71F2, cpuValues.get(4));
+        assertEquals((short) 0x71F2, cpuValues.get(0));
     }
 
     /**
@@ -124,7 +121,7 @@ class CPUTest implements ModelListener {
         mem.setByte((short) 5, (byte) 0xF2);
         cpu.fetchExecute(false);
         cpu.fetchExecute(true);
-        assertEquals((short) 0x71F2, cpuValues.get(5));
+        assertEquals((short) 0x71F2, cpuValues.get(1));
     }
 
     /**
@@ -138,7 +135,7 @@ class CPUTest implements ModelListener {
         for (int i = 0; i < memInitial.length; i++) mem.setByte((short) i, memInitial[i]);
         //Fetch execute called twice to run both instructions.
         cpu.fetchExecute(false);
-        cpu.fetchExecute(true);
+        cpu.fetchExecute(false);
         assertEquals((short) 0x27FF, mem.getShort((short) 0x2953));
     }
 
@@ -153,7 +150,7 @@ class CPUTest implements ModelListener {
         for (int i = 0; i < memInitial.length; i++) mem.setByte((short) i, memInitial[i]);
         //Fetch execute called twice to run both instructions.
         cpu.fetchExecute(false);
-        cpu.fetchExecute(true);
+        cpu.fetchExecute(false);
         assertEquals((short) 0xD180, mem.getShort((short) 0xF700));
     }
 
@@ -165,7 +162,7 @@ class CPUTest implements ModelListener {
         for (int i = 0; i < memInitial.length; i++) mem.setByte((short) i, memInitial[i]);
         //Fetch execute called twice to run both instructions.
         cpu.fetchExecute(false);
-        cpu.fetchExecute(true);
+        cpu.fetchExecute(false);
         assertEquals((byte) 0xFF, mem.getByte((short) 0x2953));
         assertEquals((byte) 0x00, mem.getByte((short) 0x2954));
     }
@@ -178,7 +175,7 @@ class CPUTest implements ModelListener {
         for (int i = 0; i < memInitial.length; i++) mem.setByte((short) i, memInitial[i]);
         //Fetch execute called twice to run both instructions.
         cpu.fetchExecute(false);
-        cpu.fetchExecute(true);
+        cpu.fetchExecute(false);
         assertEquals((byte) 0x80, mem.getByte((short) 0xF700));
         assertEquals((byte) 0x00, mem.getByte((short) 0xF701));
     }
@@ -193,7 +190,7 @@ class CPUTest implements ModelListener {
                 (byte) 0x00};
         for (int i = 0; i < memInitial.length; i++) mem.setByte((short) i, memInitial[i]);
         //Fetch execute called twice to run both instructions.
-        cpu.fetchExecute(true);
+        cpu.fetchExecute(false);
         assertThrows(IllegalArgumentException.class, () -> cpu.fetchExecute(false));
     }
 
@@ -206,7 +203,7 @@ class CPUTest implements ModelListener {
         mem.setByte((short) 1, (byte) 0x00);
         mem.setByte((short) 2, (byte) 0x01);
         input = "y";
-        cpu.fetchExecute(true);
+        cpu.fetchExecute(false);
         assertEquals('y', (char) mem.getByte((short) 0x0001));
     }
 
@@ -218,7 +215,7 @@ class CPUTest implements ModelListener {
         mem.setByte((short) 0, (byte) 0x50);
         mem.setByte((short) 1, (byte) 0x00);
         mem.setByte((short) 2, (byte) 0x35);
-        cpu.fetchExecute(true);
+        cpu.fetchExecute(false);
         assertEquals("5", output);
     }
 
@@ -231,7 +228,7 @@ class CPUTest implements ModelListener {
         mem.setByte((short) 1, (byte) 0xA5);
         mem.setByte((short) 2, (byte) 0x11);
         mem.setByte((short) 0xA511, (byte) 0x0A);
-        cpu.fetchExecute(true);
+        cpu.fetchExecute(false);
         assertEquals("\n", output);
     }
 
@@ -248,7 +245,7 @@ class CPUTest implements ModelListener {
         for (int i = 0; i < testBytes.length; i++) {
             mem.setByte((short) (0x2222 + i), testBytes[i]);
         }
-        cpu.fetchExecute(true);
+        cpu.fetchExecute(false);
         assertEquals(testString, output);
     }
 
@@ -261,7 +258,7 @@ class CPUTest implements ModelListener {
         mem.setByte((short) 1, (byte) 0x22);
         mem.setByte((short) 2, (byte) 0x22);
         input = "3456";
-        cpu.fetchExecute(true);
+        cpu.fetchExecute(false);
         assertEquals((short) 3456, mem.getShort((short) 0x2222));
     }
 
@@ -273,7 +270,7 @@ class CPUTest implements ModelListener {
         mem.setByte((short) 0, (byte) 0x38);
         mem.setByte((short) 1, (byte) 0xFF);
         mem.setByte((short) 2, (byte) 0xFF);
-        cpu.fetchExecute(true);
+        cpu.fetchExecute(false);
         assertEquals("-1", output);
     }
 
@@ -316,7 +313,7 @@ class CPUTest implements ModelListener {
         mem.setByte((short) 0x0902, (byte) 0x89);
         cpu.fetchExecute(false);
         cpu.fetchExecute(true);
-        assertEquals((short) 0x6789, cpuValues.get(4));
+        assertEquals((short) 0x6789, cpuValues.get(0));
     }
 
     /**
@@ -332,7 +329,7 @@ class CPUTest implements ModelListener {
         mem.setByte((short) 5, (byte) 0x22);
         cpu.fetchExecute(false);
         cpu.fetchExecute(true);
-        assertEquals((short) 0xFF22, cpuValues.get(0));
+        assertEquals((short) 0xFF22, cpuValues.get(3));
     }
 
     /**
@@ -348,7 +345,7 @@ class CPUTest implements ModelListener {
         mem.setByte((short) 5, (byte) 0x22);
         cpu.fetchExecute(false);
         cpu.fetchExecute(true);
-        assertEquals((short) 0x0006, cpuValues.get(0));
+        assertEquals((short) 0x0006, cpuValues.get(3));
     }
 
     /**
@@ -364,7 +361,7 @@ class CPUTest implements ModelListener {
         mem.setByte((short) 5, (byte) 0x22);
         cpu.fetchExecute(false);
         cpu.fetchExecute(true);
-        assertEquals((short) 0xFF22, cpuValues.get(0));
+        assertEquals((short) 0xFF22, cpuValues.get(3));
     }
 
     /**
@@ -380,7 +377,7 @@ class CPUTest implements ModelListener {
         mem.setByte((short) 5, (byte) 0x22);
         cpu.fetchExecute(false);
         cpu.fetchExecute(true);
-        assertEquals((short) 0x0006, cpuValues.get(0));
+        assertEquals((short) 0x0006, cpuValues.get(3));
     }
 
     /**
@@ -396,7 +393,7 @@ class CPUTest implements ModelListener {
         mem.setByte((short) 5, (byte) 0x22);
         cpu.fetchExecute(false);
         cpu.fetchExecute(true);
-        assertEquals((short) 0xFF22, cpuValues.get(0));
+        assertEquals((short) 0xFF22, cpuValues.get(3));
     }
 
     /**
@@ -412,7 +409,7 @@ class CPUTest implements ModelListener {
         mem.setByte((short) 5, (byte) 0x22);
         cpu.fetchExecute(false);
         cpu.fetchExecute(true);
-        assertEquals((short) 0x0006, cpuValues.get(0));
+        assertEquals((short) 0x0006, cpuValues.get(3));
     }
 
     /**
@@ -428,7 +425,7 @@ class CPUTest implements ModelListener {
         mem.setByte((short) 5, (byte) 0x22);
         cpu.fetchExecute(false);
         cpu.fetchExecute(true);
-        assertEquals((short) 0xFF22, cpuValues.get(0));
+        assertEquals((short) 0xFF22, cpuValues.get(3));
     }
 
     /**
@@ -444,7 +441,7 @@ class CPUTest implements ModelListener {
         mem.setByte((short) 5, (byte) 0x22);
         cpu.fetchExecute(false);
         cpu.fetchExecute(true);
-        assertEquals((short) 0x0006, cpuValues.get(0));
+        assertEquals((short) 0x0006, cpuValues.get(3));
     }
 
     /**
@@ -460,7 +457,7 @@ class CPUTest implements ModelListener {
         mem.setByte((short) 5, (byte) 0x22);
         cpu.fetchExecute(false);
         cpu.fetchExecute(true);
-        assertEquals((short) 0xFF22, cpuValues.get(0));
+        assertEquals((short) 0xFF22, cpuValues.get(3));
     }
 
     /**
@@ -476,7 +473,7 @@ class CPUTest implements ModelListener {
         mem.setByte((short) 5, (byte) 0x22);
         cpu.fetchExecute(false);
         cpu.fetchExecute(true);
-        assertEquals((short) 0x0006, cpuValues.get(0));
+        assertEquals((short) 0x0006, cpuValues.get(3));
     }
 
     /**
@@ -492,7 +489,7 @@ class CPUTest implements ModelListener {
         mem.setByte((short) 5, (byte) 0x22);
         cpu.fetchExecute(false);
         cpu.fetchExecute(true);
-        assertEquals((short) 0xFF22, cpuValues.get(0));
+        assertEquals((short) 0xFF22, cpuValues.get(3));
     }
 
     /**
@@ -508,7 +505,7 @@ class CPUTest implements ModelListener {
         mem.setByte((short) 5, (byte) 0x22);
         cpu.fetchExecute(false);
         cpu.fetchExecute(true);
-        assertEquals((short) 0x0006, cpuValues.get(0));
+        assertEquals((short) 0x0006, cpuValues.get(3));
     }
 
     /**
@@ -526,7 +523,7 @@ class CPUTest implements ModelListener {
         cpu.fetchExecute(false);
         cpu.fetchExecute(false);
         cpu.fetchExecute(true);
-        assertEquals((short) 0xFF22, cpuValues.get(0));
+        assertEquals((short) 0xFF22, cpuValues.get(3));
     }
 
     /**
@@ -544,7 +541,7 @@ class CPUTest implements ModelListener {
         cpu.fetchExecute(false);
         cpu.fetchExecute(false);
         cpu.fetchExecute(true);
-        assertEquals((short) 0x0007, cpuValues.get(0));
+        assertEquals((short) 0x0007, cpuValues.get(3));
     }
 
     /**
@@ -562,7 +559,7 @@ class CPUTest implements ModelListener {
         cpu.fetchExecute(false);
         cpu.fetchExecute(false);
         cpu.fetchExecute(true);
-        assertEquals((short) 0xFF22, cpuValues.get(0));
+        assertEquals((short) 0xFF22, cpuValues.get(3));
     }
 
     /**
@@ -580,7 +577,7 @@ class CPUTest implements ModelListener {
         cpu.fetchExecute(false);
         cpu.fetchExecute(false);
         cpu.fetchExecute(true);
-        assertEquals((short) 0x0007, cpuValues.get(0));
+        assertEquals((short) 0x0007, cpuValues.get(3));
     }
 
     /**
@@ -599,9 +596,9 @@ class CPUTest implements ModelListener {
         mem.setByte((short) 0x5600, (byte) 0x00);
         mem.setByte((short) 0x5601, (byte) 0x48);
         mem.setByte((short) 0x5602, (byte) 0x58);
-        cpu.fetchExecute(true);
         cpu.fetchExecute(false);
-        cpu.fetchExecute(true);
+        cpu.fetchExecute(false);
+        cpu.fetchExecute(false);
         cpu.fetchExecute(false);
         assertEquals("Hi", output);
     }
@@ -617,7 +614,7 @@ class CPUTest implements ModelListener {
         mem.setByte((short) 3, (byte) 0x18);
         cpu.fetchExecute(false);
         cpu.fetchExecute(true);
-        assertEquals((short) 0x0F0F, cpuValues.get(4));
+        assertEquals((short) 0x0F0F, cpuValues.get(0));
     }
 
 
@@ -632,7 +629,7 @@ class CPUTest implements ModelListener {
         mem.setByte((short) 3, (byte) 0x19);
         cpu.fetchExecute(false);
         cpu.fetchExecute(true);
-        assertEquals((short) 0x0F0F, cpuValues.get(5));
+        assertEquals((short) 0x0F0F, cpuValues.get(1));
     }
 
 
@@ -647,7 +644,7 @@ class CPUTest implements ModelListener {
         mem.setByte((short) 3, (byte) 0x1A);
         cpu.fetchExecute(false);
         cpu.fetchExecute(true);
-        assertEquals((short) 0xFFFF, cpuValues.get(4));
+        assertEquals((short) 0xFFFF, cpuValues.get(0));
     }
 
 
@@ -662,7 +659,7 @@ class CPUTest implements ModelListener {
         mem.setByte((short) 3, (byte) 0x1B);
         cpu.fetchExecute(false);
         cpu.fetchExecute(true);
-        assertEquals((short) 0x0001, cpuValues.get(5));
+        assertEquals((short) 0x0001, cpuValues.get(1));
     }
 
     /**
@@ -676,7 +673,7 @@ class CPUTest implements ModelListener {
         mem.setByte((short) 3, (byte) 0x1C);
         cpu.fetchExecute(false);
         cpu.fetchExecute(true);
-        assertEquals((short) 0x0002, cpuValues.get(4));
+        assertEquals((short) 0x0002, cpuValues.get(0));
     }
 
 
@@ -691,7 +688,7 @@ class CPUTest implements ModelListener {
         mem.setByte((short) 3, (byte) 0x1D);
         cpu.fetchExecute(false);
         cpu.fetchExecute(true);
-        assertEquals((short) 0x1000, cpuValues.get(5));
+        assertEquals((short) 0x1000, cpuValues.get(1));
     }
 
     /**
@@ -705,7 +702,7 @@ class CPUTest implements ModelListener {
         mem.setByte((short) 3, (byte) 0x1E);
         cpu.fetchExecute(false);
         cpu.fetchExecute(true);
-        assertEquals((short) 0x0004, cpuValues.get(4));
+        assertEquals((short) 0x0004, cpuValues.get(0));
     }
 
 
@@ -720,7 +717,7 @@ class CPUTest implements ModelListener {
         mem.setByte((short) 3, (byte) 0x1F);
         cpu.fetchExecute(false);
         cpu.fetchExecute(true);
-        assertEquals((short) 0xF800, cpuValues.get(5));
+        assertEquals((short) 0xF800, cpuValues.get(1));
     }
 
     /**
@@ -734,7 +731,7 @@ class CPUTest implements ModelListener {
         mem.setByte((short) 3, (byte) 0x20);
         cpu.fetchExecute(false);
         cpu.fetchExecute(true);
-        assertEquals((short) 0x0001, cpuValues.get(4));
+        assertEquals((short) 0x0001, cpuValues.get(0));
     }
 
 
@@ -749,7 +746,7 @@ class CPUTest implements ModelListener {
         mem.setByte((short) 3, (byte) 0x21);
         cpu.fetchExecute(false);
         cpu.fetchExecute(true);
-        assertEquals((short) 0x0002, cpuValues.get(5));
+        assertEquals((short) 0x0002, cpuValues.get(1));
     }
 
     /**
@@ -763,7 +760,7 @@ class CPUTest implements ModelListener {
         mem.setByte((short) 3, (byte) 0x22);
         cpu.fetchExecute(false);
         cpu.fetchExecute(true);
-        assertEquals((short) 0x6000, cpuValues.get(4));
+        assertEquals((short) 0x6000, cpuValues.get(0));
     }
 
 
@@ -778,7 +775,7 @@ class CPUTest implements ModelListener {
         mem.setByte((short) 3, (byte) 0x23);
         cpu.fetchExecute(false);
         cpu.fetchExecute(true);
-        assertEquals((short) 0x8000, cpuValues.get(5));
+        assertEquals((short) 0x8000, cpuValues.get(1));
     }
 
     /**
@@ -792,7 +789,7 @@ class CPUTest implements ModelListener {
         mem.setByte((short) 3, (byte) 0x1D);
         cpu.fetchExecute(false);
         cpu.fetchExecute(true);
-        assertTrue((boolean) cpuValues.get(6));
+        assertTrue((boolean) cpuValues.get(7));
     }
 
     /**
@@ -806,7 +803,7 @@ class CPUTest implements ModelListener {
         mem.setByte((short) 3, (byte) 0x1D);
         cpu.fetchExecute(false);
         cpu.fetchExecute(true);
-        assertTrue((boolean) cpuValues.get(8));
+        assertTrue((boolean) cpuValues.get(9));
     }
 
     /**
@@ -820,7 +817,7 @@ class CPUTest implements ModelListener {
         mem.setByte((short) 3, (byte) 0x1D);
         cpu.fetchExecute(false);
         cpu.fetchExecute(true);
-        assertTrue((boolean) cpuValues.get(7));
+        assertTrue((boolean) cpuValues.get(8));
     }
 
     /**
@@ -834,7 +831,7 @@ class CPUTest implements ModelListener {
         mem.setByte((short) 3, (byte) 0x1D);
         cpu.fetchExecute(false);
         cpu.fetchExecute(true);
-        assertTrue((boolean) cpuValues.get(9));
+        assertTrue((boolean) cpuValues.get(10));
     }
 
     /**
@@ -874,7 +871,7 @@ class CPUTest implements ModelListener {
         mem.setByte((short) 5, (byte) 0x77);
         cpu.fetchExecute(false);
         cpu.fetchExecute(true);
-        assertEquals((short) 0x8888, cpuValues.get(5));
+        assertEquals((short) 0x8888, cpuValues.get(0));
     }
 
     /**
@@ -890,7 +887,7 @@ class CPUTest implements ModelListener {
         mem.setByte((short) 5, (byte) 0x11);
         cpu.fetchExecute(false);
         cpu.fetchExecute(true);
-        assertEquals((short) 0x3333, cpuValues.get(6));
+        assertEquals((short) 0x3333, cpuValues.get(1));
     }
 
     /**
@@ -906,7 +903,7 @@ class CPUTest implements ModelListener {
         mem.setByte((short) 5, (byte) 0x20);
         cpu.fetchExecute(false);
         cpu.fetchExecute(true);
-        assertEquals((short) 0x5151, cpuValues.get(5));
+        assertEquals((short) 0x5151, cpuValues.get(0));
     }
 
     /**
@@ -922,7 +919,7 @@ class CPUTest implements ModelListener {
         mem.setByte((short) 5, (byte) 0x0F);
         cpu.fetchExecute(false);
         cpu.fetchExecute(true);
-        assertEquals((short) 0x00F0, cpuValues.get(6));
+        assertEquals((short) 0x00F0, cpuValues.get(1));
     }
 
     /**
@@ -938,7 +935,7 @@ class CPUTest implements ModelListener {
         mem.setByte((short) 5, (byte) 0x81);
         cpu.fetchExecute(false);
         cpu.fetchExecute(true);
-        assertEquals((short) 0x5001, cpuValues.get(5));
+        assertEquals((short) 0x5001, cpuValues.get(0));
     }
 
     /**
@@ -954,7 +951,7 @@ class CPUTest implements ModelListener {
         mem.setByte((short) 5, (byte) 0x0F);
         cpu.fetchExecute(false);
         cpu.fetchExecute(true);
-        assertEquals((short) 0x880F, cpuValues.get(6));
+        assertEquals((short) 0x880F, cpuValues.get(1));
     }
 
     /**
@@ -970,7 +967,7 @@ class CPUTest implements ModelListener {
         mem.setByte((short) 5, (byte) 0x81);
         cpu.fetchExecute(false);
         cpu.fetchExecute(true);
-        assertEquals((short) 0x71A1, cpuValues.get(5));
+        assertEquals((short) 0x71A1, cpuValues.get(0));
     }
 
     /**
@@ -986,7 +983,7 @@ class CPUTest implements ModelListener {
         mem.setByte((short) 5, (byte) 0xFE);
         cpu.fetchExecute(false);
         cpu.fetchExecute(true);
-        assertEquals((short) 0xFAFE, cpuValues.get(6));
+        assertEquals((short) 0xFAFE, cpuValues.get(1));
     }
 
     /**
@@ -1002,7 +999,7 @@ class CPUTest implements ModelListener {
         mem.setByte((short) 5, (byte) 0xAC);
         cpu.fetchExecute(false);
         cpu.fetchExecute(true);
-        assertEquals((short) 0xACAC, cpuValues.get(5));
+        assertEquals((short) 0xACAC, cpuValues.get(0));
         //Need to check Z flag once implemented.
     }
 
@@ -1019,7 +1016,7 @@ class CPUTest implements ModelListener {
         mem.setByte((short) 5, (byte) 0x10);
         cpu.fetchExecute(false);
         cpu.fetchExecute(true);
-        assertEquals((short) 0x0001, cpuValues.get(6));
+        assertEquals((short) 0x0001, cpuValues.get(1));
         //check N flag once implemented.
     }
 
@@ -1036,24 +1033,20 @@ class CPUTest implements ModelListener {
 
     /**
      * Grabs the register updates generated by the CPU and adds them to an ArrayList.
-     * @param name name of register
-     * @param value value of register
+     * @param values value of registers
      */
     @Override
-    public void registerUpdate(String name, Short value) {
-        names.add(name);
-        cpuValues.add(value);
+    public void registerUpdate(short[] values) {
+        for (short value:values) cpuValues.add(value);
     }
 
     /**
-     * Grabs the flag updates generated by the CPU and adds them to an ArrayList.
-     * @param name of the flag to be updated.
-     * @param value if the flag is set true, false otherwise.
+     * Grabs the flag updates generated by the CPU and adds them to an ArrayList
+     * @param values store the boolean value of the flags
      */
     @Override
-    public void flagUpdate(String name, boolean value) {
-        names.add(name);
-        cpuValues.add(value);
+    public void flagUpdate(boolean[] values) {
+        for (boolean value:values) cpuValues.add(value);
     }
 
     /**

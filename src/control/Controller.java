@@ -33,16 +33,16 @@ public class Controller implements ModelListener, ViewListener {
 
     @Override
     public String getInput() {
-        return null;
+        return view.getBatchInput();
     }
 
     @Override
-    public void registerUpdate(String name, Short value) {
+    public void registerUpdate(short[] values) {
 
     }
 
     @Override
-    public void flagUpdate(String name, boolean value) {
+    public void flagUpdate(boolean[] values) {
 
     }
 

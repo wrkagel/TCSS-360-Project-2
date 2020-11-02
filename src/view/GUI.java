@@ -160,8 +160,6 @@ public class GUI extends JFrame implements ActionListener{
     private Scanner wordsScanner;
     /**Setting screensize to calculate size of application**/
     private Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-    /**Tells which character of BatchIO to send**/
-    private int batchIndex = -1;
     private JButton TraceButton;
     private JButton TraceButton2;
     private JCheckBox TraceChecker;
@@ -736,8 +734,7 @@ public class GUI extends JFrame implements ActionListener{
      * getter batch input
      * @return batch input character
      */
-    public char getBatchInput(){
-        batchIndex++;
-        return BatchIO.getText().charAt(batchIndex);
+    public String getBatchInput(){
+        return BatchIO.getText();
     }
 }
