@@ -95,6 +95,9 @@ public class CPU {
      */
     private boolean isStep;
 
+    /**
+     * Stores the input buffer.
+     */
     private String input = "";
 
     /**
@@ -184,6 +187,7 @@ public class CPU {
      */
     private void stopInstruction() {
         if (listener != null) updateListener();
+        programCounter.setShort((short) 0);
     }
 
     /**
@@ -442,48 +446,53 @@ public class CPU {
         if (mode == 0) {
             operand.setShort(operandSpecifier.getShort());
         } else {
-            operand.setShort(getOperandAddress(AddressingMode.values()[mode]));
+            operand.setShort(mem.getShort(getOperandAddress(AddressingMode.values()[mode])));
         }
         short value1;
         if (opCode < 112) {
             value1 = stackPointer.getShort();
-            checkFlags = new boolean[]{false, false, false, false};
         } else if (reg == 1) {
             value1 = index.getShort();
         } else {
             value1 = accumulator.getShort();
         }
         if (opCode < 104 ) {
+            //ADD stack pointer
             value1 = alu.add(value1, operand.getShort());
             //set NZVC
             checkFlags = new boolean[]{true, true, true, true};
         } else if (opCode < 112) {
+            //SUB stack pointer
             value1 = alu.sub(value1, operand.getShort());
             //set NZVC
             checkFlags = new boolean[]{true, true, true, true};
         } else if (opCode < 128) {
+            //ADD
             value1 = alu.add(value1, operand.getShort());
             //set NZVC
             checkFlags = new boolean[]{true, true, true, true};
         } else if (opCode < 144) {
+            //SUB
             value1 = alu.sub(value1, operand.getShort());
             //set NZVC
             checkFlags = new boolean[]{true, true, true, true};
         } else if (opCode < 160) {
+            //AND
             value1 = alu.and(value1, operand.getShort());
             //set NZ
             checkFlags = new boolean[]{true, true, false, false};
         } else if (opCode < 176) {
+            //OR
             value1 = alu.or(value1, operand.getShort());
             //set NZ
             checkFlags = new boolean[]{true, true, false, false};
         } else if (opCode < 192) {
-            //use subtract for compare.
+            //CMP: Use subtract for compare.
             value1 = alu.sub(value1, operand.getShort());
             //set NZVC
             checkFlags = new boolean[]{true, true, true, true};
             //Invert negative flag if overflow flag is true.
-            if (checkFlags[3] == true) {
+            if (alu.getOverflowFlag()) {
                 checkFlags[0] = false;
                 if (negativeFlag == alu.getNegativeFlag()) negativeFlag = !negativeFlag;
             }
