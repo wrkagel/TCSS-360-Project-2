@@ -11,6 +11,7 @@ RJ Alabado, Walter Kagel, Taehong Kim
  * @author Group 8, Lead: Taehong Kim
  * @version 10/25/2020
  */
+import control.Controller;
 import control.ViewListener;
 
 import java.awt.*;
@@ -18,7 +19,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.util.Scanner;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JFrame;
@@ -122,8 +122,6 @@ public class GUI extends JFrame implements ActionListener{
     private JTabbedPane tabbedPane;
     /**Setting source code tab with text area.**/
     private JTextArea sourceTab;
-    /**Setting trace tab with text area.**/
-    private JTextArea traceTab;
     /**Setting Text area for Aslisting.**/
     private JTextArea AsListing;
     /**Setting down of cpu panel.**/
@@ -152,8 +150,6 @@ public class GUI extends JFrame implements ActionListener{
     private JTextField OperandSpecifier1;
     /**Setting Operand specifier text field2.**/
     private JTextField OperandSpecifier2;
-    /**Setting words scanner to scanner result.**/
-    private Scanner wordsScanner;
     /**Setting screensize to calculate size of application**/
     private Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
     /**View listener**/
@@ -166,6 +162,11 @@ public class GUI extends JFrame implements ActionListener{
     private JCheckBox Vbox;
     /**Setting check box for C flag**/
     private JCheckBox Cbox;
+    /**Setting run object menu Item**/
+    private JMenuItem RunObjectMenu;
+    /**Setting debug Object menu Item**/
+    private JMenuItem DebugObjectMenu;
+    private control.Controller Controller;
 
     public static void main(String []args) {
         new GUI();
@@ -212,11 +213,23 @@ public class GUI extends JFrame implements ActionListener{
         newButton.addActionListener(this);
         newButton.setPreferredSize(new Dimension (screenSize.width/12,screenSize.height*3/50));
 
-        JButton startButton = new JButton("Start Debugging");
-        startButton.setFont(myFont);
-        startButton.setBackground(Color.lightGray);
-        startButton.addActionListener(this);
-        startButton.setPreferredSize(new Dimension (screenSize.width/12,screenSize.height*3/50));
+        JButton startDebuggingButton = new JButton("Start Debugging");
+        startDebuggingButton.setFont(myFont);
+        startDebuggingButton.setBackground(Color.lightGray);
+        startDebuggingButton.addActionListener(this);
+        startDebuggingButton.setPreferredSize(new Dimension (screenSize.width/12,screenSize.height*3/50));
+
+        JButton runObjectButton = new JButton("Run Object");
+        runObjectButton.setFont(myFont);
+        runObjectButton.setBackground(Color.lightGray);
+        runObjectButton.addActionListener(this);
+        runObjectButton.setPreferredSize(new Dimension (screenSize.width/12,screenSize.height*3/50));
+
+        JButton debugObjectButton = new JButton("Debug Object");
+        debugObjectButton.setFont(myFont);
+        debugObjectButton.setBackground(Color.lightGray);
+        debugObjectButton.addActionListener(this);
+        debugObjectButton.setPreferredSize(new Dimension (screenSize.width/12,screenSize.height*3/50));
 
         JButton saveButton = new JButton("Save");
         saveButton.setBackground(Color.lightGray);
@@ -245,9 +258,10 @@ public class GUI extends JFrame implements ActionListener{
         emptyPanel2.setPreferredSize(new Dimension (screenSize.width/12,screenSize.height*3/50));
 
         /*Adding whole buttons in UpPanel*/
-        upPanel.add(newButton);upPanel.add(runCodeButton); upPanel.add(saveButton);
-        upPanel.add(startButton);upPanel.add(assembleButton);
-        upPanel.add(emptyPanel);upPanel.add(emptyPanel2);
+        upPanel.add(newButton);upPanel.add(saveButton);upPanel.add(runObjectButton);upPanel.add(debugObjectButton);
+        upPanel.add(assembleButton); upPanel.add(runCodeButton); upPanel.add(startDebuggingButton);
+
+
     }
 
     /**
@@ -512,6 +526,7 @@ public class GUI extends JFrame implements ActionListener{
         Cpupaneldown.add(Instructionout1);
         Instructionout2 = new JTextField();
         Instructionout2.setEditable(false);
+        Instructionout2.setFont(myFont2);
         Instructionout2.setPreferredSize(new Dimension(screenSize.width/12,screenSize.height*3/112));
         Cpupaneldown.add(Instructionout2);
         CpuPanel.add(Cpupaneldown);
@@ -591,10 +606,18 @@ public class GUI extends JFrame implements ActionListener{
         RunSourceMenu.addActionListener(this);
         StartDebuggingMenu = new JMenuItem("Start Debugging");
         StartDebuggingMenu.addActionListener(this);
+        RunObjectMenu = new JMenuItem("Run Object");
+        RunObjectMenu.addActionListener(this);
+        DebugObjectMenu= new JMenuItem("Debug Object");
+        DebugObjectMenu.addActionListener(this);
         RunSourceMenu.setFont(myFont);
         StartDebuggingMenu.setFont(myFont);
+        RunObjectMenu.setFont(myFont);
+        DebugObjectMenu.setFont(myFont);
         Build.add(RunSourceMenu);
         Build.add(StartDebuggingMenu);
+        Build.add(RunObjectMenu);
+        Build.add(DebugObjectMenu);
 
         /*Adding all menu buttons to menubar*/
         menuBar.add(File);menuBar.add(Build);menuBar.add(Edit);
@@ -622,6 +645,10 @@ public class GUI extends JFrame implements ActionListener{
             ViewListner.buttonPushed("Start Debugging");
         } else if (userinput.equals("Assemble")) {
             ViewListner.buttonPushed("Assemble");
+        } else if (userinput.equals("Debug Object")) {
+            ViewListner.buttonPushed("Debug Object");
+        } else if (userinput.equals("Run Object")) {
+            ViewListner.buttonPushed("Run Object");
         }
         /**
          * file menu input
@@ -637,6 +664,10 @@ public class GUI extends JFrame implements ActionListener{
         else if (userinput.equals("Run Source")) {
             ViewListner.buildSelection("Run Source");
         } else if (userinput.equals("Start Debugging")) {
+            ViewListner.buildSelection("Start Debugging");
+        } else if (userinput.equals("Run Object")) {
+            ViewListner.buildSelection("Run Source");
+        } else if (userinput.equals("Debug Object")) {
             ViewListner.buildSelection("Start Debugging");
         }
         /**
@@ -767,8 +798,8 @@ public class GUI extends JFrame implements ActionListener{
      * getter for object code
      * @return shorts value of object code
      */
-    public short getObjectCode(){
-        return (short) (Integer.parseInt(ObjCode.getText(),16));
+    public String getObjectCode(){
+        return ObjCode.getText();
     }
 
     /**
@@ -794,4 +825,9 @@ public class GUI extends JFrame implements ActionListener{
     public String getBatchInput(){
         return BatchIO.getText();
     }
+
+    public void addViewListener(Controller controller) {
+        this.Controller = controller;
+    }
+}
 }
