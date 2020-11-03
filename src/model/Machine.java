@@ -84,13 +84,20 @@ public class Machine {
      */
     public void setMemory(short startAddress, byte ... values) {
         if (startAddress + values.length > 65536) {
-            listener.errorMessage("Attempt to set memory outside of valid addresses.");
+            if (listener!= null) listener.errorMessage("Attempt to set memory outside of valid addresses.");
         }
         for (int i = 0; i < values.length; i++) {
             mem.setByte((short) (startAddress + i), values[i]);
         }
-        if (listener == null) return;
-        listener.memoryUpdate(mem.getMemCopy());
+        if (listener != null) listener.memoryUpdate(mem.getMemCopy());
+    }
+
+    public void reset() {
+        mem = new Memory();
+        cpu = new CPU(mem);
+        cpu.addListener(listener);
+        isStep = false;
+        if (listener != null) listener.memoryUpdate(mem.getMemCopy());
     }
 
     public void setIsStep(boolean isStep) {
