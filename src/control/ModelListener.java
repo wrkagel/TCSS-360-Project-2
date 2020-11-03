@@ -22,23 +22,19 @@ public interface ModelListener {
     String getInput();
 
     /**
-     * Tells the listener that a register with the given name has been update with the given value.
-     * @param name name of register
-     * @param value value of register
+     * Passes along a list of values for registers in a predetermined order.
      */
     void registerUpdate(short[] values);
 
     /**
-     * Update the flag named with the given value.
-     * @param name of the flag to be updated.
-     * @param value if the flag is set true, false otherwise.
+     * Passes along a list of values for flags in a predetermined order.
+     * @param values
      */
     void flagUpdate(boolean[] values);
 
     /**
      * Gives the listener a full copy of memory to pass to the view.
-     * @param values a consecutive set of values in memory with the first value being the value at the
-     *               starting address.
+     * @param values a full copy of all bytes in memory.
      */
     void memoryUpdate(byte[] values);
 

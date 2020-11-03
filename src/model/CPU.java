@@ -183,7 +183,7 @@ public class CPU {
      * Informs the listener of the register updates of a stop instruction and then returns true.
      */
     private void stopInstruction() {
-        if (listener == null) updateListener();
+        if (listener != null) updateListener();
     }
 
     /**
@@ -219,20 +219,28 @@ public class CPU {
         if (instSpec < 6) {
             shouldBranch = true;
         } else if (instSpec < 8) {
+            //Less than or equal
             shouldBranch = negativeFlag || zeroFlag;
         } else if (instSpec < 10) {
+            //Less than
             shouldBranch = negativeFlag;
         } else if (instSpec < 12) {
+            //Equal
             shouldBranch = zeroFlag;
         } else if (instSpec < 14) {
+            //Not Equal
             shouldBranch = !zeroFlag;
         } else if (instSpec < 16) {
+            //Greater Than or Equal
             shouldBranch = !negativeFlag;
         } else if (instSpec < 18) {
+            //Greater than
             shouldBranch = !(negativeFlag || zeroFlag);
         } else if (instSpec < 20) {
+            //Branch if overflow
             shouldBranch = overflowFlag;
         } else if (instSpec < 22) {
+            //Branch if carry
             shouldBranch = carryFlag;
         } else {
             throw new IllegalStateException("Incorrectly went into branch function. Error in code.");
@@ -318,7 +326,8 @@ public class CPU {
     }
 
     /**
-     * Performs an input or output operation on a decimal value.
+     * Performs an input or output operation on a decimal value. This can currently read in multi character decimal
+     * numbers and this may be incorrect compared to how the original pep/8 simulator operates.
      */
     private void decimalIO() {
         if (listener == null) throw new IllegalStateException("Cannot do input or output without a listener");
@@ -469,12 +478,19 @@ public class CPU {
             //set NZ
             checkFlags = new boolean[]{true, true, false, false};
         } else if (opCode < 192) {
+            //use subtract for compare.
             value1 = alu.sub(value1, operand.getShort());
             //set NZVC
             checkFlags = new boolean[]{true, true, true, true};
+            //Invert negative flag if overflow flag is true.
+            if (checkFlags[3] == true) {
+                checkFlags[0] = false;
+                if (negativeFlag == alu.getNegativeFlag()) negativeFlag = !negativeFlag;
+            }
         } else {
             throw new IllegalStateException("Incorrectly went into binaryALUOp. Error in code.");
         }
+        //Don't store the result if compare.
         if (opCode < 176) {
             if (opCode < 112) {
                 stackPointer.setShort(value1);
@@ -590,6 +606,9 @@ public class CPU {
         return address;
     }
 
+    /**
+     * Update listener method that updates listener with all current register, flag, and memory values.
+     */
     private void updateListener() {
         short[] registerValues = new short[] {accumulator.getShort(), index.getShort(), stackPointer.getShort(),
                 programCounter.getShort(), instructionSpecifier.getShort(), operandSpecifier.getShort(),
