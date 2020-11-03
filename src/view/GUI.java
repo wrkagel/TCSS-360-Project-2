@@ -18,11 +18,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.*;
 import java.util.Scanner;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
-import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -35,8 +33,6 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.border.TitledBorder;
-import javax.swing.filechooser.FileNameExtensionFilter;
-import javax.swing.filechooser.FileSystemView;
 
 /**
  *
@@ -116,10 +112,10 @@ public class GUI extends JFrame implements ActionListener{
     private JMenuItem pasteMenu;
     /**Setting Build menu.**/
     private JMenu Build;
-    /**Setting Load menu.**/
-    private JMenuItem loadMenu;
-    /**Setting Run menu**/
-    private JMenuItem runMenu;
+    /**Setting RunSource menu.**/
+    private JMenuItem RunSourceMenu;
+    /**Setting StartDebugging menu**/
+    private JMenuItem StartDebuggingMenu;
     /**Setting open sub-menu.**/
     private JMenuItem openMenu;
     /**Setting tab panel.**/
@@ -160,10 +156,16 @@ public class GUI extends JFrame implements ActionListener{
     private Scanner wordsScanner;
     /**Setting screensize to calculate size of application**/
     private Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-    private JButton TraceButton;
-    private JButton TraceButton2;
-    private JCheckBox TraceChecker;
+    /**View listener**/
     private ViewListener ViewListner;
+    /**Setting check box for N flag**/
+    private JCheckBox Nbox;
+    /**Setting check box for Z flag**/
+    private JCheckBox Zbox;
+    /**Setting check box for V flag**/
+    private JCheckBox Vbox;
+    /**Setting check box for C flag**/
+    private JCheckBox Cbox;
 
     public static void main(String []args) {
         new GUI();
@@ -265,9 +267,7 @@ public class GUI extends JFrame implements ActionListener{
         /*Setting source code and trace tabs with text areas and add to main Line Start Panel*/
         sourceTab = new JTextArea("Please type your Souce Code here",screenSize.width/4,screenSize.height*3/14);
         sourceTab.setFont(myFont);
-        traceTab = new JTextArea(null,screenSize.width/4,screenSize.height*3/14);
-        traceTab.setEditable(false);
-        tabbedPane.addTab("Code", sourceTab); tabbedPane.addTab("Trace", traceTab);
+        tabbedPane.addTab("Code", sourceTab);
         lineStartPanel.add(tabbedPane);
 
         /*Setting object code text areas and add to main Line Start Panel*/
@@ -327,7 +327,7 @@ public class GUI extends JFrame implements ActionListener{
         Nmark.setFont(myFont);
         Nmark.setSize(new Dimension(screenSize.width*1/112,screenSize.height*1/112));
         CpupanelTop.add(Nmark);
-        JCheckBox Nbox = new JCheckBox();
+        Nbox = new JCheckBox();
         Nbox.setEnabled(false);
         Nbox.setSize(new Dimension(screenSize.width*1/112,screenSize.height*1/112));
         CpupanelTop.add(Nbox);
@@ -337,7 +337,7 @@ public class GUI extends JFrame implements ActionListener{
         Zmark.setFont(myFont);
         Zmark.setSize(new Dimension(screenSize.width*1/112,screenSize.height*1/112));
         CpupanelTop.add(Zmark);
-        JCheckBox Zbox = new JCheckBox();
+        Zbox = new JCheckBox();
         Zbox.setEnabled(false);
         Zbox.setSize(new Dimension(screenSize.width*1/112,screenSize.height*1/112));
         CpupanelTop.add(Zbox);
@@ -347,7 +347,7 @@ public class GUI extends JFrame implements ActionListener{
         Vmark.setFont(myFont);
         Vmark.setSize(new Dimension(screenSize.width*1/112,screenSize.height*1/112));
         CpupanelTop.add(Vmark);
-        JCheckBox Vbox = new JCheckBox();
+        Vbox = new JCheckBox();
         Vbox.setEnabled(false);
         Vbox.setSize(new Dimension(screenSize.width*1/112,screenSize.height*1/112));
         CpupanelTop.add(Vbox);
@@ -357,7 +357,7 @@ public class GUI extends JFrame implements ActionListener{
         Cmark.setFont(myFont);
         Cmark.setSize(new Dimension(screenSize.width*1/112,screenSize.height*1/112));
         CpupanelTop.add(Cmark);
-        JCheckBox Cbox = new JCheckBox();
+        Cbox = new JCheckBox();
         Cbox.setEnabled(false);
         Cbox.setSize(new Dimension(screenSize.width*1/112,screenSize.height*1/112));
         CpupanelTop.add(Cbox);
@@ -587,14 +587,14 @@ public class GUI extends JFrame implements ActionListener{
         /*Create build menu with sub-menu*/
         Build = new JMenu("Build");
         Build.setFont(myFont);
-        loadMenu = new JMenuItem("Load");
-        loadMenu.addActionListener(this);
-        runMenu = new JMenuItem("Run");
-        runMenu.addActionListener(this);
-        loadMenu.setFont(myFont);
-        runMenu.setFont(myFont);
-        Build.add(loadMenu);
-        Build.add(runMenu);
+        RunSourceMenu = new JMenuItem("Run Source");
+        RunSourceMenu.addActionListener(this);
+        StartDebuggingMenu = new JMenuItem("Start Debugging");
+        StartDebuggingMenu.addActionListener(this);
+        RunSourceMenu.setFont(myFont);
+        StartDebuggingMenu.setFont(myFont);
+        Build.add(RunSourceMenu);
+        Build.add(StartDebuggingMenu);
 
         /*Adding all menu buttons to menubar*/
         menuBar.add(File);menuBar.add(Build);menuBar.add(Edit);
@@ -634,19 +634,19 @@ public class GUI extends JFrame implements ActionListener{
         /**
          * build menu input
          */
-        else if (userinput.equals("Load")) {
-            ViewListner.buildSelection("Load");
-        } else if (userinput.equals("Run")) {
-            ViewListner.buildSelection("Run");
+        else if (userinput.equals("Run Source")) {
+            ViewListner.buildSelection("Run Source");
+        } else if (userinput.equals("Start Debugging")) {
+            ViewListner.buildSelection("Start Debugging");
         }
-//        /**
-//         * edit menu input
-//         */
-//        else if (userinput.equals("Cut Object Code")) {
-//            ViewListner.editSelection("Cut Object Code");
-//        } else if (userinput.equals("Paste into Object Code")) {
-//            ViewListner.editSelection("Paste into Object Code");
-//        }
+        /**
+         * edit menu input
+         */
+        else if (userinput.equals("Cut Object Code")) {
+            ObjCode.cut();
+        } else if (userinput.equals("Paste into Object Code")) {
+            ObjCode.paste();
+        }
     }
 
     /**
@@ -668,6 +668,7 @@ public class GUI extends JFrame implements ActionListener{
         }
         sb.replace(0, 1, "");
         Memory.setText(sb.toString());
+        Memory.setCaretPosition(0);
     }
 
     /**
@@ -682,36 +683,84 @@ public class GUI extends JFrame implements ActionListener{
         Accumulatorout2.setText(""+registerList[0]);
 
         String IndexResigister = String.format("%04x", registerList[1]);
-        IndexRegister1.setText(Accumulator.toUpperCase());
+        IndexRegister1.setText(IndexResigister.toUpperCase());
         IndexRegister2.setText(""+registerList[1]);
 
         String StackPointer = String.format("%04x", registerList[2]);
-        StackPointer1.setText(Accumulator.toUpperCase());
+        StackPointer1.setText(StackPointer.toUpperCase());
         StackPointer2.setText(""+registerList[2]);
 
         String ProgramCounter = String.format("%04x", registerList[3]);
-        ProgramCounterout1.setText(Accumulator.toUpperCase());
+        ProgramCounterout1.setText(ProgramCounter.toUpperCase());
         ProgramCounterout2.setText(""+registerList[3]);
 
         String InstructionSpecifier = String.format("%04x", registerList[4]);
-        Instructionout1.setText(Accumulator.toUpperCase());
+        Instructionout1.setText(InstructionSpecifier.toUpperCase());
         Instructionout2.setText(""+registerList[4]);
 
         String OperandSpecifier = String.format("%04x", registerList[5]);
-        OperandSpecifier1.setText(Accumulator.toUpperCase());
+        OperandSpecifier1.setText(OperandSpecifier.toUpperCase());
         OperandSpecifier2.setText(""+registerList[5]);
 
         String Operand = String.format("%04x", registerList[6]);
-        Operand1.setText(Accumulator.toUpperCase());
+        Operand1.setText(Operand.toUpperCase());
         Operand2.setText(""+registerList[6]);
     }
 
     /**
-     * output setter
-     * @param c character
+     * Setter for output
+     * @param c String
      */
     public void setoutput(String c) {
         Outputtext.setText(Outputtext.getText() + c);
+    }
+
+    /**
+     * Setter for Object Code
+     * @param str string
+     */
+    public void setObjectCode(String str){
+        ObjCode.setText(ObjCode.getText()+str);
+    }
+
+    /**
+     * Setter for Assembler listing
+     * @param str string
+     */
+    public void setAsListing(String str){
+        AsListing.setText(AsListing.getText()+str);
+    }
+    
+    /**
+     * setter for Nbox status
+     * @param value boolean value
+     */
+    public void setNbox(boolean value){
+        Nbox.setSelected(value);
+    }
+
+    /**
+     * setter for Zbox status
+     * @param value boolean value
+     */
+    public void setZbox(boolean value){
+        Zbox.setSelected(value);
+    }
+
+    /**
+     * setter for Vbox status
+     * @param value boolean value
+     */
+    public void setVbox(boolean value){
+        Vbox.setSelected(value);
+
+    }
+    /**
+     * setter for Cbox status
+     * @param value boolean value
+     */
+    public void setCbox(boolean value){
+        Cbox.setSelected(value);
     }
 
     /**
@@ -728,6 +777,14 @@ public class GUI extends JFrame implements ActionListener{
      */
     public String getSourceCode(){
         return sourceTab.getText();
+    }
+
+    /**
+     * Getter for Aslisting box
+     * @return
+     */
+    public String getAsListing(){
+        return AsListing.getText();
     }
 
     /**

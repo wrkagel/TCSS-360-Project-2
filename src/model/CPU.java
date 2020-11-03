@@ -183,7 +183,7 @@ public class CPU {
      * Informs the listener of the register updates of a stop instruction and then returns true.
      */
     private void stopInstruction() {
-        if (listener == null) updateListener();
+        if (listener != null) updateListener();
     }
 
     /**

@@ -11,6 +11,8 @@ import model.Machine;
 import view.GUI;
 
 import javax.swing.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Controls all communication and updating between the model and view packages. Updates the view when a change
@@ -57,6 +59,10 @@ public class Controller implements ModelListener, ViewListener {
      */
     @Override
     public void flagUpdate(boolean[] values) {
+        view.setNbox(values[0]);
+        view.setZbox(values[1]);
+        view.setVbox(values[2]);
+        view.setCbox(values[3]);
     }
 
     /**
@@ -95,12 +101,21 @@ public class Controller implements ModelListener, ViewListener {
         switch (name) {
             case "New" -> reset();
             case "Run Source" -> {
-                if (assembler.assembleSourceCode(view.getSourceCode())) {
-
-                } else {
-                    JOptionPane.showMessageDialog(view, assembler.getErrorMessages());
+                try {
+                    machine.setMemory((short) 0, parseObjectCode(view.getObjectCode()));
+                } catch (Exception e) {
+                    JOptionPane.showMessageDialog(view, e.getMessage());
                 }
+                machine.run(false);
             }
+
+//            case "Run Source" -> {
+//                if (assembler.assembleSourceCode(view.getSourceCode())) {
+//
+//                } else {
+//                    JOptionPane.showMessageDialog(view, assembler.getErrorMessages());
+//                }
+//            }
         }
     }
 
@@ -122,5 +137,31 @@ public class Controller implements ModelListener, ViewListener {
      */
     private void reset() {
         machine.reset();
+        view.setCbox(false);
+        view.setVbox(false);
+        view.setZbox(false);
+        view.setNbox(false);
+        view.setRegistersText(new short[8]);
+        view.setMemory(new byte[65536]);
+    }
+
+    private byte[] parseObjectCode(String objectCode) {
+        objectCode = objectCode.replaceAll("\\s", "");
+        objectCode.toUpperCase();
+        Pattern p = Pattern.compile("[^0-9ABCDEF]");
+        Matcher m = p.matcher(objectCode);
+        if (m.find()) {
+            throw new IllegalArgumentException("Error in object code.");
+        } else {
+            if (objectCode.length() % 2 != 0) {
+                throw new IllegalArgumentException("Object code contains at least one incomplete byte.");
+            }
+            int arrLength = objectCode.length() / 2;
+            byte[] bytes = new byte[arrLength];
+            for (int i = 0; i < arrLength; i++) {
+                bytes[i] = (byte) Integer.parseUnsignedInt(objectCode.substring(2 * i, 2 * (i + 1)), 16);
+            }
+            return bytes;
+        }
     }
 }
