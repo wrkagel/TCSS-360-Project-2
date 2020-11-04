@@ -133,7 +133,7 @@ public class Controller implements ModelListener, ViewListener {
     @Override
     public void fileSelection(String name) {
         switch(name) {
-            case "Open" -> openFile();
+            case "Open" -> openSource();
             case "New" -> reset();
         }
     }
@@ -178,7 +178,7 @@ public class Controller implements ModelListener, ViewListener {
     /**
      * Opens a file and reads it into source. Does no checking just reads in a text file.
      */
-    private void openFile() {
+    private void openSource() {
         JFileChooser chooser = new JFileChooser();
         FileNameExtensionFilter filter = new FileNameExtensionFilter(
                 "Text files", "txt");
