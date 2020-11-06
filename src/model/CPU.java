@@ -12,9 +12,9 @@ import control.ModelListener;
  * Processes the instructions stored in memory by performing the fetch-execute cycle for a single instruction.
  * Contains all pep/8 internal registers.
  * @author Group 8, Lead: Walter Kagel
- * @version 11/05/2020
+ * @version 11/06/2020
  */
-public class CPU {
+class CPU {
 
     /**
      * The arithmetic and logic unit for the cpu.
@@ -39,14 +39,14 @@ public class CPU {
     /**
      * Used as the pep/8 program counter;
      */
-    private final Register programCounter;
+    private final PCRegister programCounter;
 
     /**
      * Used to store the instruction specifier for an instruction.
      * Uses only the least significant byte of the register as the instruction specifier is
      * only 8 bits.
      */
-    private final Register instructionSpecifier;
+    private final InstructionRegister instructionSpecifier;
 
     /**
      * Used to store the operand specifier for an instruction.
@@ -103,13 +103,13 @@ public class CPU {
     /**
      * Create the cpu with its ALU, registers, and flags.
      */
-    public CPU(Memory memIn){
+    CPU(Memory memIn){
         alu = new ALU();
         accumulator = new Register();
         index = new Register();
         stackPointer = new Register();
-        programCounter = new Register();
-        instructionSpecifier = new Register();
+        programCounter = new PCRegister();
+        instructionSpecifier = new InstructionRegister();
         operandSpecifier = new Register();
         operand = new Register();
         negativeFlag = false;
@@ -136,43 +136,42 @@ public class CPU {
      * method. Returns true if the STOP instruction is encountered.
      * @return true if instruction read was STOP, false otherwise.
      */
-    public boolean fetchExecute(boolean isTrace) {
+    boolean fetchExecute(boolean isTrace) {
         this.isStep = isTrace;
-        short instructionAddress = programCounter.getShort();
-        instructionSpecifier.setByte(false, mem.getByte(instructionAddress));
-        programCounter.setShort((short) (instructionAddress + 1));
-        int instSpec = Short.toUnsignedInt(instructionSpecifier.getShort());
-        if(instSpec == 0) {
+        instructionSpecifier.setInstruction(mem.getByte(programCounter.getShort()));
+        programCounter.advance(1);
+        int opCode = instructionSpecifier.getUnsignedValue();
+        if(opCode == 0) {
             stopInstruction();
             return true;
-        } else if (instSpec == 1){
+        } else if (opCode == 1){
             //returnFromTrap();
             //Traps not currently implemented
-        } else if (instSpec == 2) {
+        } else if (opCode == 2) {
             moveSPtoAcc();
-        } else if (instSpec == 3) {
+        } else if (opCode == 3) {
             moveFlagstoAcc();
-        } else if (instSpec < 22) {
+        } else if (opCode < 22) {
             branch();
-        } else if (instSpec < 24) {
+        } else if (opCode < 24) {
             callSubroutine();
-        } else if (instSpec < 36) {
+        } else if (opCode < 36) {
             unaryALUOp();
-        } else if (instSpec < 48) {
+        } else if (opCode < 48) {
             //no operation trap calls
-        } else if (instSpec < 64) {
+        } else if (opCode < 64) {
             decimalIO();
-        } else if (instSpec < 72) {
+        } else if (opCode < 72) {
             stringOut();
-        } else if (instSpec < 88) {
+        } else if (opCode < 88) {
             charIO();
-        } else if (instSpec < 96) {
+        } else if (opCode < 96) {
             returnFromCall();
-        } else if (instSpec < 192) {
+        } else if (opCode < 192) {
             binaryALUOp();
-        } else if (instSpec < 224) {
+        } else if (opCode < 224) {
             load();
-        } else if (instSpec < 256) {
+        } else if (opCode < 256) {
             store();
         } else {
             if (listener != null) {
@@ -217,39 +216,39 @@ public class CPU {
      */
     private void branch() {
         boolean shouldBranch;
-        int instSpec = Short.toUnsignedInt(instructionSpecifier.getShort());
+        int opCode = instructionSpecifier.getUnsignedValue();
         operandSpecifier.setShort(mem.getShort(programCounter.getShort()));
-        programCounter.setShort((short) (programCounter.getShort() + 2));
-        if (instSpec < 6) {
+        programCounter.advance(2);
+        if (opCode < 6) {
             shouldBranch = true;
-        } else if (instSpec < 8) {
+        } else if (opCode < 8) {
             //Less than or equal
             shouldBranch = negativeFlag || zeroFlag;
-        } else if (instSpec < 10) {
+        } else if (opCode < 10) {
             //Less than
             shouldBranch = negativeFlag;
-        } else if (instSpec < 12) {
+        } else if (opCode < 12) {
             //Equal
             shouldBranch = zeroFlag;
-        } else if (instSpec < 14) {
+        } else if (opCode < 14) {
             //Not Equal
             shouldBranch = !zeroFlag;
-        } else if (instSpec < 16) {
+        } else if (opCode < 16) {
             //Greater Than or Equal
             shouldBranch = !negativeFlag;
-        } else if (instSpec < 18) {
+        } else if (opCode < 18) {
             //Greater than
             shouldBranch = !(negativeFlag || zeroFlag);
-        } else if (instSpec < 20) {
+        } else if (opCode < 20) {
             //Branch if overflow
             shouldBranch = overflowFlag;
-        } else if (instSpec < 22) {
+        } else if (opCode < 22) {
             //Branch if carry
             shouldBranch = carryFlag;
         } else {
             throw new IllegalStateException("Incorrectly went into branch function. Error in code.");
         }
-        if ((instSpec & 0x1) == 1) {
+        if (instructionSpecifier.getLSBit() == 1) {
             operand.setShort(mem.getShort(getOperandAddress(AddressingMode.X)));
         } else {
             operand.setShort(operandSpecifier.getShort());
@@ -266,10 +265,10 @@ public class CPU {
      */
     private void callSubroutine() {
         operandSpecifier.setShort(mem.getShort(programCounter.getShort()));
-        programCounter.setShort((short) (programCounter.getShort() + 2));
+        programCounter.advance(2);
         stackPointer.setShort((short) (stackPointer.getShort() - 2));
         mem.setShort(stackPointer.getShort(), programCounter.getShort());
-        if ((instructionSpecifier.getShort() & 0x1) == 1) {
+        if (instructionSpecifier.getLSBit() == 1) {
             operand.setShort(mem.getShort(getOperandAddress(AddressingMode.X)));
         } else {
             operand.setShort(operandSpecifier.getShort());
@@ -282,10 +281,10 @@ public class CPU {
      * Performs an ALU operation that only has one input.
      */
     private void unaryALUOp() {
-        int opCode = Short.toUnsignedInt(instructionSpecifier.getShort());
+        int opCode = instructionSpecifier.getUnsignedValue();
         short value;
         boolean[] checkFlags;
-        if ((instructionSpecifier.getShort() & 0x1) == 1) {
+        if (instructionSpecifier.getLSBit() == 1) {
             value = index.getShort();
         } else {
             value = accumulator.getShort();
@@ -317,7 +316,7 @@ public class CPU {
         } else {
             throw new IllegalStateException("Incorrectly went into unaryALUOp. Error in code.");
         }
-        if ((instructionSpecifier.getShort() & 0x1) == 1) {
+        if (instructionSpecifier.getLSBit() == 1) {
             index.setShort(value);
         } else {
             accumulator.setShort(value);
@@ -335,13 +334,14 @@ public class CPU {
      */
     private void decimalIO() {
         if (listener == null) throw new IllegalStateException("Cannot do input or output without a listener");
-        int instrSpec = Short.toUnsignedInt(instructionSpecifier.getShort());
+        int opCode = instructionSpecifier.getUnsignedValue();
         operandSpecifier.setShort(mem.getShort(programCounter.getShort()));
-        programCounter.setShort((short) (programCounter.getShort() + 2));
-        int mode = instrSpec & 0x7;
-        boolean isInput = (instrSpec & 0x8) == 0;
+        programCounter.advance(2);
+        AddressingMode mode = instructionSpecifier.getAddresssingMode();
+        boolean isInput = (opCode & 0x8) == 0;
         if (isInput) {
-            if (mode == 0) throw new IllegalArgumentException("Illegal addressing mode for decimal input.");
+            if (mode == AddressingMode.I)
+                throw new IllegalArgumentException("Illegal addressing mode for decimal input.");
             if (input.length() == 0) input = listener.getInput();
             short oper;
             try {
@@ -350,13 +350,13 @@ public class CPU {
                 throw new IllegalArgumentException("Input cannot be read as a decimal word.");
             }
             operand.setShort(oper);
-            mem.setShort(getOperandAddress(AddressingMode.values()[mode]), oper);
+            mem.setShort(getOperandAddress(mode), oper);
         } else {
             short oper;
-            if (mode == 0) {
+            if (mode == AddressingMode.I) {
                 oper = operandSpecifier.getShort();
             } else {
-                oper = mem.getShort(getOperandAddress(AddressingMode.values()[mode]));
+                oper = mem.getShort(getOperandAddress(mode));
             }
             operand.setShort(oper);
             listener.output("" + oper);
@@ -370,13 +370,12 @@ public class CPU {
      */
     private void stringOut() {
         if (listener == null) throw new IllegalStateException("Cannot perform string out without a listener");
-        int instSpec = Short.toUnsignedInt(instructionSpecifier.getShort());
-        int mode = instSpec & 0x7;
+        AddressingMode mode = instructionSpecifier.getAddresssingMode();
         operandSpecifier.setShort(mem.getShort(programCounter.getShort()));
-        programCounter.setShort((short) (programCounter.getShort() + 2));
-        if (mode != 1 && mode != 2 && mode != 4) throw new IllegalArgumentException("Illegal addressing mode" +
-                " for string out.");
-        short oper = getOperandAddress(AddressingMode.values()[mode]);
+        programCounter.advance(2);
+        if (mode != AddressingMode.D && mode != AddressingMode.N && mode != AddressingMode.SF)
+            throw new IllegalArgumentException("Illegal addressing mode for string out.");
+        short oper = getOperandAddress(mode);
         operand.setShort(oper);
         StringBuilder sb = new StringBuilder();
         byte out = mem.getByte(oper);
@@ -394,25 +393,26 @@ public class CPU {
      */
     private void charIO() {
         if (listener == null) throw new IllegalStateException("Cannot do input or output without a listener");
-        int instrSpec = Short.toUnsignedInt(instructionSpecifier.getShort());
+        int instrSpec = instructionSpecifier.getUnsignedValue();
         operandSpecifier.setShort(mem.getShort(programCounter.getShort()));
-        programCounter.setShort((short) (programCounter.getShort() + 2));
-        int mode = instrSpec & 0x7;
+        programCounter.advance(2);
+        AddressingMode mode = instructionSpecifier.getAddresssingMode();
         boolean isInput = (instrSpec & 0x8) == 0x8;
         if (isInput) {
-            if (mode == 0) throw new IllegalArgumentException("Illegal addressing mode for character input.");
+            if (mode == AddressingMode.I)
+                throw new IllegalArgumentException("Illegal addressing mode for character input.");
             if (input.length() == 0) input = listener.getInput();
             char oper = input.charAt(0);
             input = input.substring(1);
             operand.setByte(true, (byte) 0);
             operand.setByte(false, (byte) oper);
-            mem.setByte(getOperandAddress(AddressingMode.values()[mode]), (byte) oper);
+            mem.setByte(getOperandAddress(mode), (byte) oper);
         } else {
             char oper;
-            if (mode == 0) {
+            if (mode == AddressingMode.I) {
                 oper = (char) operandSpecifier.getByte(false);
             } else {
-                oper = (char) mem.getByte(getOperandAddress(AddressingMode.values()[mode]));
+                oper = (char) mem.getByte(getOperandAddress(mode));
             }
             operand.setByte(true, (byte) 0);
             operand.setByte(false, (byte) oper);
@@ -425,9 +425,9 @@ public class CPU {
      * Returns from a call.
      */
     private void returnFromCall() {
-        int n = instructionSpecifier.getShort() & 0x7;
+        int n = (instructionSpecifier.getUnsignedValue() & 0x7);
         stackPointer.setShort((short) (stackPointer.getShort() + n));
-        programCounter.setShort(mem.getShort(stackPointer.getShort()));
+        programCounter.setPC(mem.getShort(stackPointer.getShort()));
         stackPointer.setShort((short) (stackPointer.getShort() + 2));
         if (listener != null && isStep) updateListener();
     }
@@ -437,16 +437,16 @@ public class CPU {
      */
     private void binaryALUOp() {
         operandSpecifier.setShort(mem.getShort(programCounter.getShort()));
-        programCounter.setShort((short) (programCounter.getShort() + 2));
-        int opCode = instructionSpecifier.getShort();
-        int mode = (opCode & 0x7);
+        programCounter.advance(2);
+        int opCode = instructionSpecifier.getUnsignedValue();
+        AddressingMode mode = instructionSpecifier.getAddresssingMode();
         int reg = (opCode & 0xF) >>> 3;
         //Check {negative, zero, overflow, carry}
         boolean[] checkFlags;
-        if (mode == 0) {
+        if (mode == AddressingMode.I) {
             operand.setShort(operandSpecifier.getShort());
         } else {
-            operand.setShort(mem.getShort(getOperandAddress(AddressingMode.values()[mode])));
+            operand.setShort(mem.getShort(getOperandAddress(mode)));
         }
         short value1;
         if (opCode < 112) {
@@ -521,17 +521,16 @@ public class CPU {
      */
     private void load() {
         operandSpecifier.setShort(mem.getShort(programCounter.getShort()));
-        programCounter.setShort((short) (programCounter.getShort() + 2));
-        int opCode = instructionSpecifier.getByte(false) >>> 4;
-        int regAndMode = instructionSpecifier.getByte(false) & 0xF;
-        int isByte = opCode & 0x1;
-        int reg = regAndMode >>> 3;
-        int mode = regAndMode & 0x7;
+        programCounter.advance(2);
+        int opCode = instructionSpecifier.getUnsignedValue();
+        int reg = (opCode & 0xF) >>> 3;
+        int isByte = (opCode & 0x10) >>> 4;
+        AddressingMode mode = instructionSpecifier.getAddresssingMode();
         if (isByte == 0) {
-            if (mode == 0) {
+            if (mode == AddressingMode.I) {
                 operand.setShort(operandSpecifier.getShort());
             } else {
-                operand.setShort(mem.getShort(getOperandAddress(AddressingMode.values()[mode])));
+                operand.setShort(mem.getShort(getOperandAddress(mode)));
             }
             if (reg == 0) {
                 accumulator.setShort(operand.getShort());
@@ -540,10 +539,10 @@ public class CPU {
             }
         } else {
             operand.setByte(true, (byte) 0);
-            if (mode == 0) {
+            if (mode == AddressingMode.I) {
                 operand.setByte(false, operandSpecifier.getByte(false));
             } else {
-                operand.setByte(false, mem.getByte(getOperandAddress(AddressingMode.values()[mode])));
+                operand.setByte(false, mem.getByte(getOperandAddress(mode)));
             }
             if (reg == 0) {
                 accumulator.setByte(false, operand.getByte(false));
@@ -561,15 +560,15 @@ public class CPU {
      */
     private void store() {
         operandSpecifier.setShort(mem.getShort(programCounter.getShort()));
-        programCounter.setShort((short) (programCounter.getShort() + 2));
-        int opCode = instructionSpecifier.getByte(false) >>> 4;
-        int regAndMode = instructionSpecifier.getByte(false) & 0xF;
-        int isByte = opCode & 0x1;
-        int reg = regAndMode >>> 3;
-        int mode = regAndMode & 0x7;
+        programCounter.advance(2);
+        int opCode = instructionSpecifier.getUnsignedValue();
+        int reg = (opCode & 0xF) >>> 3;
+        int isByte = (opCode & 0x10) >>> 4;
+        AddressingMode mode = instructionSpecifier.getAddresssingMode();
         short address;
-        if (mode == 0) throw new IllegalArgumentException("Illegal addressing mode for store instruction.");
-        address = getOperandAddress(AddressingMode.values()[mode]);
+        if (mode == AddressingMode.I)
+            throw new IllegalArgumentException("Illegal addressing mode for store instruction.");
+        address = getOperandAddress(mode);
         if (isByte == 0) {
             if (reg == 0) {
                 operand.setShort(accumulator.getShort());
@@ -620,7 +619,7 @@ public class CPU {
      */
     private void updateListener() {
         short[] registerValues = new short[] {accumulator.getShort(), index.getShort(), stackPointer.getShort(),
-                programCounter.getShort(), instructionSpecifier.getShort(), operandSpecifier.getShort(),
+                programCounter.getShort(), (short) instructionSpecifier.getUnsignedValue(), operandSpecifier.getShort(),
                 operand.getShort()};
         boolean[] flags = new boolean[] {negativeFlag, zeroFlag, overflowFlag, carryFlag};
         listener.registerUpdate(registerValues);

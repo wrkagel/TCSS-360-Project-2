@@ -13,14 +13,14 @@ import java.util.Arrays;
  * @author Group 8, Lead: Walter Kagel
  * @version 10/29/2020
  */
-public class Memory {
+class Memory {
 
     /**
      * Holds the bytes in memory. The size allows for any valid unsigned short to be used as an address.
      */
     private byte[] mem;
 
-    public Memory() {
+    Memory() {
         mem = new byte[65536];
     }
 
@@ -32,7 +32,7 @@ public class Memory {
      * @param address unsigned value of the given short that denotes memory address.
      * @param value byte value to be stored in memory
      */
-    public void setByte(short address, byte value){
+    void setByte(short address, byte value){
         mem[Short.toUnsignedInt(address)] = value;
     }
 
@@ -43,7 +43,7 @@ public class Memory {
      * @param address unsigned value of the given short that denotes memroy address
      * @return the byte value stored at that address.
      */
-    public byte getByte(short address){
+    byte getByte(short address){
         return mem[Short.toUnsignedInt(address)];
     }
 
@@ -52,7 +52,7 @@ public class Memory {
      * @param address place in memory to place the value
      * @param value value to be stored in memory
      */
-    public void setShort(short address, short value) {
+    void setShort(short address, short value) {
         int intAddress = Short.toUnsignedInt(address);
         if (intAddress >= mem.length -1) {
             throw new IllegalArgumentException("Addressing would go outside the bounds of memory.");
@@ -66,7 +66,7 @@ public class Memory {
      * @param address the starting byte address
      * @return the two bytes combined as a short.
      */
-    public short getShort(short address) {
+    short getShort(short address) {
         int intAddress = Short.toUnsignedInt(address);
         if (intAddress >= mem.length - 1) {
             throw new IllegalArgumentException("Addressing would go outside the bounds of memory.");
@@ -80,7 +80,7 @@ public class Memory {
      * Returns a copy of the memory. Used for updating the listener.
      * @return a full copy of the contents of memory.
      */
-    public byte[] getMemCopy() {
+    byte[] getMemCopy() {
         return Arrays.copyOf(mem, mem.length);
     }
 
