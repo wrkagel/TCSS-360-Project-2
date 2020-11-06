@@ -12,7 +12,7 @@ import control.ModelListener;
  * Processes the instructions stored in memory by performing the fetch-execute cycle for a single instruction.
  * Contains all pep/8 internal registers.
  * @author Group 8, Lead: Walter Kagel
- * @version 10/29/2020
+ * @version 11/05/2020
  */
 public class CPU {
 

@@ -9,7 +9,7 @@ RJ Alabado, Walter Kagel, Taehong Kim
 /**
  * Builds and displays the GUI. Informs of user actions using the ViewListener.
  * @author Group 8, Lead: Taehong Kim
- * @version 10/25/2020
+ * @version 11/04/2020
  */
 import control.Controller;
 import control.ViewListener;

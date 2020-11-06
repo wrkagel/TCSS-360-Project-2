@@ -6,7 +6,6 @@ Group 8
 RJ Alabado, Walter Kagel, Taehong Kim
  */
 
-import model.Assembler;
 import model.Machine;
 import view.GUI;
 
@@ -23,7 +22,8 @@ import java.util.regex.Pattern;
 /**
  * Controls all communication and updating between the model and view packages. Updates the view when a change
  * in model has occurred. Calls appropriate functions upon a user action on the view.
- *
+ * @author Group 8, Walter Kagel
+ * @version 11/05/2020
  */
 public class Controller implements ModelListener, ViewListener {
 
@@ -106,28 +106,16 @@ public class Controller implements ModelListener, ViewListener {
     public void buttonPushed(String name) {
         switch (name) {
             case "New" -> reset();
-            case "Run Object" -> {
-                try {
-                    machine.setMemory((short) 0, parseObjectCode(view.getObjectCode()));
-                } catch (Exception e) {
-                    JOptionPane.showMessageDialog(view, e.getMessage());
-                }
-                machine.run(false);
-            }
-            case "Debug Object" -> {
-                try {
-                    machine.setMemory((short) 0, parseObjectCode(view.getObjectCode()));
-                } catch (Exception e) {
-                    JOptionPane.showMessageDialog(view, e.getMessage());
-                }
-                machine.run(true);
-            }
+            case "Run Object" -> runObject();
+            case "Debug Object" -> debugObject();
             case "Save" -> saveSource();
+            case "Run Source" -> runSource();
+            case "Start Debugging" -> debugSource();
         }
     }
 
     /**
-     * Takes in the name of the
+     * Takes in the name of the user selection from the file menu and calls the appropriate methods.
      * @param name name of selection
      */
     @Override
@@ -138,15 +126,26 @@ public class Controller implements ModelListener, ViewListener {
         }
     }
 
+    /**
+     * Takes in the name of the user selction from the build menu and calls the appropriate methods.
+     * @param name name of selection
+     */
     @Override
     public void buildSelection(String name) {
+        switch(name){
+            case "Run Object" -> runObject();
+            case "Debug Object" -> debugObject();
+            case "Run Source" -> runSource();
+            case "Start Debugging" -> debugSource();
+        }
     }
 
     /**
-     * Resets the machine with a fresh cpu and memory.
+     * Resets the machine with a fresh cpu and memory. Resets
      */
     private void reset() {
         machine.reset();
+        view.setoutput("");
         view.setCbox(false);
         view.setVbox(false);
         view.setZbox(false);
@@ -172,6 +171,46 @@ public class Controller implements ModelListener, ViewListener {
                 bytes[i] = (byte) Integer.parseUnsignedInt(objectCode.substring(2 * i, 2 * (i + 1)), 16);
             }
             return bytes;
+        }
+    }
+
+    private void runObject() {
+        try {
+            machine.setMemory((short) 0, parseObjectCode(view.getObjectCode()));
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(view, e.getMessage());
+        }
+        machine.run(false);
+    }
+
+    private void debugObject() {
+        try {
+            machine.setMemory((short) 0, parseObjectCode(view.getObjectCode()));
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(view, e.getMessage());
+        }
+        machine.run(true);
+    }
+
+    private void runSource() {
+        boolean success = assembler.assembleSourceCode(view.getSourceCode());
+        if (success) {
+            view.setObjectCode(assembler.getMachineCode());
+            view.setAsListing(assembler.getAssemblerListing());
+            runObject();
+        } else {
+            JOptionPane.showMessageDialog(view, assembler.getErrorMessages());
+        }
+    }
+
+    private void debugSource() {
+        boolean success = assembler.assembleSourceCode(view.getSourceCode());
+        if (success) {
+            view.setObjectCode(assembler.getMachineCode());
+            view.setAsListing(assembler.getAssemblerListing());
+            debugObject();
+        } else {
+            JOptionPane.showMessageDialog(view, assembler.getErrorMessages());
         }
     }
 
