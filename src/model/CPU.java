@@ -12,7 +12,7 @@ import control.ModelListener;
  * Processes the instructions stored in memory by performing the fetch-execute cycle for a single instruction.
  * Contains all pep/8 internal registers.
  * @author Group 8, Lead: Walter Kagel
- * @version 11/06/2020
+ * @version 11/07/2020
  */
 class CPU {
 
@@ -427,7 +427,7 @@ class CPU {
     private void returnFromCall() {
         int n = (instructionSpecifier.getUnsignedValue() & 0x7);
         stackPointer.setShort((short) (stackPointer.getShort() + n));
-        programCounter.setPC(mem.getShort(stackPointer.getShort()));
+        programCounter.setShort(mem.getShort(stackPointer.getShort()));
         stackPointer.setShort((short) (stackPointer.getShort() + 2));
         if (listener != null && isStep) updateListener();
     }

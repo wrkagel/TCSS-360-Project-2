@@ -10,12 +10,6 @@ import model.Machine;
 import view.GUI;
 
 import javax.swing.*;
-import javax.swing.filechooser.FileNameExtensionFilter;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -23,7 +17,7 @@ import java.util.regex.Pattern;
  * Controls all communication and updating between the model and view packages. Updates the view when a change
  * in model has occurred. Calls appropriate functions upon a user action on the view.
  * @author Group 8, Walter Kagel
- * @version 11/05/2020
+ * @version 11/07/2020
  */
 public class Controller implements ModelListener, ViewListener {
 
@@ -218,79 +212,10 @@ public class Controller implements ModelListener, ViewListener {
      * Opens a file and reads it into source. Does no checking just reads in a text file.
      */
     private void openSource() {
-        JFileChooser chooser = new JFileChooser();
-        FileNameExtensionFilter filter = new FileNameExtensionFilter(
-                "Text files", "txt");
-        chooser.setFileFilter(filter);
-        int returnVal = chooser.showOpenDialog(view);
-        if(returnVal == JFileChooser.APPROVE_OPTION) {
-            System.out.println("You chose to open this file: " +
-                    chooser.getSelectedFile().getName());
-
-            File inputFile = chooser.getSelectedFile();
-            if (!inputFile.canRead()) {
-                JOptionPane.showMessageDialog(view, inputFile.getName() + " cannot be" +
-                        " read.");
-            } else {
-                try (Scanner sc = new Scanner(inputFile)) {
-                    StringBuilder sb = new StringBuilder();
-                    while (sc.hasNext()) {
-                        sb.append(sc.nextLine());
-                    }
-                    view.setSourceCode(sb.toString());
-                } catch (FileNotFoundException e) {
-                    JOptionPane.showMessageDialog(view, e.getMessage());
-                }
-            }
-        }
+        FileIO.readFromFile(view);
     }
 
     private void saveSource() {
-        JFileChooser chooser = new JFileChooser();
-        FileNameExtensionFilter filter = new FileNameExtensionFilter(
-                "Text files", "txt");
-        chooser.setFileFilter(filter);
-        boolean loop = true;
-        while (loop) {
-            int returnVal = chooser.showSaveDialog(view);
-            if (returnVal == JFileChooser.APPROVE_OPTION) {
-                File outputFile = chooser.getSelectedFile();
-                if (!outputFile.getAbsolutePath().endsWith(".txt")) {
-                    outputFile = new File(outputFile.getAbsolutePath() + ".txt");
-                }
-                try {
-                    if (outputFile.createNewFile()) {
-                        FileWriter fw = new FileWriter(outputFile);
-                        fw.append(view.getSourceCode());
-                        fw.close();
-                        loop = false;
-                    } else {
-                        int overwrite = JOptionPane.showConfirmDialog(view, "This file already exists would you " +
-                                "like to replace it?");
-                        if (overwrite == JOptionPane.YES_OPTION) {
-                             if (!outputFile.delete()) {
-                                 JOptionPane.showMessageDialog(view, outputFile.getName() +" could not be replaced.");
-                                 loop = false;
-                             } else {
-                                 if (outputFile.createNewFile()) {
-                                     FileWriter fw = new FileWriter(outputFile);
-                                     fw.append(view.getSourceCode());
-                                     fw.close();
-                                     loop = false;
-                                }
-                             }
-                        } else if (overwrite == JOptionPane.NO_OPTION) {
-                            continue;
-                        } else {
-                            loop = false;
-                        }
-                    }
-                } catch (IOException e) {
-                    JOptionPane.showMessageDialog(view, e.getMessage());
-                }
-            } else {
-                loop = false;
-            }
-        }
+        FileIO.writeToFile(view);
     }
 }
