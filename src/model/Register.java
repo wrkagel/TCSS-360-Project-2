@@ -12,7 +12,7 @@ RJ Alabado, Walter Kagel, Taehong Kim
  * @author Group 8, Lead: Walter Kagel
  * @version 10/26/2020
  */
-public class Register {
+class Register {
 
     /**
      * The byte containing the MSB.
@@ -29,7 +29,7 @@ public class Register {
      * @param isMostSig returns most significant byte if true, else returns least significant byte.
      * @return byte value
      */
-    public byte getByte(boolean isMostSig) {
+    byte getByte(boolean isMostSig) {
         if (isMostSig) return mostSigByte;
         return leastSigByte;
     }
@@ -38,7 +38,7 @@ public class Register {
      * Returns the value stored in register as a short. Added for convenience.
      * @return value as short
      */
-    public short getShort() {
+    short getShort() {
         return (short) ((mostSigByte << 8) | (leastSigByte & 0xFF));
     }
 
@@ -47,7 +47,7 @@ public class Register {
      * @param isMostSig sets most significant byte if true, else sets least significant byte
      * @param value byte value to be stored
      */
-    public void setByte(boolean isMostSig, byte value) {
+    void setByte(boolean isMostSig, byte value) {
         if (isMostSig) {
             this.mostSigByte = value;
         } else {
@@ -59,7 +59,7 @@ public class Register {
      * Sets both bytes of the register using the short value given. Added for convenience.
      * @param value short value to set register to
      */
-    public void setShort(short value) {
+    void setShort(short value) {
         mostSigByte = (byte) ((value & 0xFF00) >>> 8);
         leastSigByte = (byte) (value & 0xFF);
     }

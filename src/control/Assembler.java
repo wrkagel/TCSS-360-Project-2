@@ -1,4 +1,4 @@
-package model;
+package control;
 
 /*
 TCSS 360 Project #2
@@ -12,7 +12,7 @@ RJ Alabado, Walter Kagel, Taehong Kim
  * Stores the generated text in private fields accessible with getters and will log all errors into an errorText
  * string generated during the assembly attempt.
  * @author Group 8
- * @version 10/25/2020
+ * @version 11/05/2020
  */
 public class Assembler {
 
@@ -50,6 +50,9 @@ public class Assembler {
      * @return whether the assembly completed without error (true), or had errors (false).
      */
     public boolean assembleSourceCode(String sourceCodeIn) {
+        String[] sourceLines = sourceCodeIn.split("\n");
+
+        buildSymbolTable();
         return false;
     }
 
@@ -76,5 +79,9 @@ public class Assembler {
      */
     public String getErrorMessages() {
         return errorMessages;
+    }
+
+    private void buildSymbolTable() {
+
     }
 }
