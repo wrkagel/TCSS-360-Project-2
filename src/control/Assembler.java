@@ -6,13 +6,17 @@ Group 8
 RJ Alabado, Walter Kagel, Taehong Kim
  */
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.PriorityQueue;
+
 /**
  * Will take in raw text or file name and will attempt to assemble based on pep/8 assembly language the text
  * into machine language and assembly listing. Returns a boolean of if the assembly was succesful or not.
  * Stores the generated text in private fields accessible with getters and will log all errors into an errorText
  * string generated during the assembly attempt.
  * @author Group 8
- * @version 11/05/2020
+ * @version 11/08/2020
  */
 public class Assembler {
 
@@ -50,8 +54,8 @@ public class Assembler {
      * @return whether the assembly completed without error (true), or had errors (false).
      */
     public boolean assembleSourceCode(String sourceCodeIn) {
-        String[] sourceLines = sourceCodeIn.split("\n");
-
+        var sourceLines = new ArrayList<>(Arrays.asList(sourceCodeIn.split("\n")));
+        if (!parsePseudoInstructions(sourceLines)) return false;
         buildSymbolTable();
         return false;
     }
@@ -79,6 +83,144 @@ public class Assembler {
      */
     public String getErrorMessages() {
         return errorMessages;
+    }
+
+    /**
+     * Strips off all comments and anything that comes after the .END sentinel, then turns pseudo-ops into
+     * lines that are easier to assemble.
+     * @param sourceLines the raw source code split into lines.
+     * @return boolean of if errors occurred or not.
+     */
+    public boolean parsePseudoInstructions(ArrayList<String> sourceLines) {
+        if (!removeCommentsAndEnd(sourceLines)) {
+            return false;
+        }
+        boolean errors = false;
+        for (int i = 0; i < sourceLines.size(); i++) {
+            String str = sourceLines.get(i);
+            if (str.length() == 0) continue;
+            String[] tokens = str.split(" ");
+            switch(tokens[0]) {
+                //Turns the .ASCII pseudo-op into a series of .BYTE ops. One for each character.
+                case ".ASCII" -> {
+                    if (tokens.length != 2) {
+                        errorMessages = errorMessages + "Incorrect number of arguments for .ASCII pseudo-op on line " +
+                                + i + ".\n";
+                        errors = true;
+                        break;
+                    }
+                    String line = tokens[1];
+                    sourceLines.remove(i);
+                    boolean isEscape = false;
+                    for (char c:line.toCharArray()) {
+                        if (c == '\\') {
+                            isEscape = true;
+                            continue;
+                        }
+                        if (c == '\"' && !isEscape) continue;
+                        if (isEscape) {
+                            c = getEscapeSequence(c);
+                            if (c == '\0') {
+                                errorMessages = errorMessages + "Invalid escape sequence at line " +
+                                        i + ".\n";
+                                errors = true;
+                                break;
+                            }
+                        }
+                        sourceLines.add(i, ".BYTE " + (byte) c);
+                        i++;
+                    }
+                    i--;
+                }
+                //Turns the .BLOCK pseudo-op into a series of .BYTE 00 lines.
+                case ".BLOCK" -> {
+                    if (tokens.length != 2) {
+                        errorMessages = errorMessages + "Incorrect number of arguments for .BLOCK pseudo-op on line " +
+                                i + ".\n";
+                        errors = true;
+                        break;
+                    }
+                    try {
+                        int value;
+                        if (tokens[1].substring(0, 2) == "0X") {
+                            value = Integer.parseInt(tokens[1].substring(2), 16);
+                        } else {
+                            value = Integer.parseInt(tokens[1]);
+                        }
+                        sourceLines.remove(i);
+                        for (; value > 0; value--) {
+                            sourceLines.add(i, ".BYTE 00");
+                            i++;
+                        }
+                        i--;
+                    } catch (Exception e) {
+                        errorMessages = errorMessages + "Error with .BLOCK at line " + i + ".\n";
+                        errors = true;
+                        break;
+                    }
+                }
+                case ".WORD" -> {
+                    if (tokens.length != 2) {
+                        errorMessages = errorMessages + "Incorrect number of arguments for .WORD pseudo-op at line " +
+                                i + ".\n";
+                        errors = true;
+                        break;
+                    }
+                    int value;
+                    if (tokens[1].substring(0, 2) == "0X") {
+                        value = Integer.parseInt(tokens[1].substring(2), 16);
+                    } else {
+                        value = Integer.parseInt(tokens[1]);
+                    }
+                    sourceLines.remove(i);
+                    if (value > Short.MAX_VALUE || value < Short.MIN_VALUE) {
+                        errorMessages = errorMessages + "Value too large to fit in a word at line " + i + ".\n";
+                        errors = true;
+                        break;
+                    }
+                    sourceLines.add(i, ".BYTE "  + (byte) (value >> 8));
+                    i++;
+                    sourceLines.add(i, ".BYTE " + (byte) (value & 0xFF));
+                }
+            }
+        }
+        return errors;
+    }
+
+    /**
+     * Helper method that removes all comments and anything past the end of the program.
+     * @param sourceLines
+     */
+    private boolean removeCommentsAndEnd(ArrayList<String> sourceLines) {
+        boolean isEnd = false;
+        for (int i = 0; i < sourceLines.size(); i++) {
+            if (isEnd) {
+                sourceLines.set(i, "");
+            } else {
+                String str = sourceLines.get(i).toUpperCase();
+                if (str.equals(".END")) isEnd = true;
+                int commentIndex = str.indexOf(';');
+                if (commentIndex == -1) continue;
+                if (commentIndex == 0) {
+                    sourceLines.set(i, "");
+                } else {
+                    sourceLines.set(i, str.substring(0, commentIndex));
+                }
+            }
+        }
+        if (!isEnd) errorMessages = errorMessages + "No .END sentinel found within the assembly source code.\n";
+        return !isEnd;
+    }
+
+    private char getEscapeSequence(char c) {
+        switch(c) {
+            case '\\': return '\\';
+            case 'n': return '\n';
+            case 't': return '\t';
+            case '\"': return '\"';
+            defualt:
+            return '\0';
+        }
     }
 
     private void buildSymbolTable() {
