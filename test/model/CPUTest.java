@@ -760,7 +760,7 @@ class CPUTest implements ModelListener {
         mem.setByte((short) 3, (byte) 0x22);
         cpu.fetchExecute(false);
         cpu.fetchExecute(true);
-        assertEquals((short) 0x6000, cpuValues.get(0));
+        assertEquals((short) 0x4000, cpuValues.get(0));
     }
 
 
