@@ -120,7 +120,7 @@ public class Assembler {
                         if (c == '\"' && !isEscape) continue;
                         if (isEscape) {
                             c = getEscapeSequence(c);
-                            if (c == '\0') {
+                            if (c == ' ') {
                                 errorMessages = errorMessages + "Invalid escape sequence at line " +
                                         i + ".\n";
                                 errors = true;
@@ -212,14 +212,19 @@ public class Assembler {
         return !isEnd;
     }
 
+    /**
+     * Returns the proper escape sequence for the given character. Returns ' ' if a valid escape sequence is not found.
+     * @param c char to be turned into an escape sequence
+     * @return escape sequence or ' ' if invalid.
+     */
     private char getEscapeSequence(char c) {
         switch(c) {
             case '\\': return '\\';
             case 'n': return '\n';
             case 't': return '\t';
             case '\"': return '\"';
-            defualt:
-            return '\0';
+            case '0' : return '\0';
+            default: return ' ';
         }
     }
 
