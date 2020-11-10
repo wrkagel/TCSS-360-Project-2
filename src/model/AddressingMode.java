@@ -13,5 +13,5 @@ RJ Alabado, Walter Kagel, Taehong Kim
  * @version 10/27/2020
  */
 enum AddressingMode {
-    I, D, N, S, SF, X, SX, SXF;
+    I, D, N, S, SF, X, SX, SXF
 }

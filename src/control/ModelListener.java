@@ -28,7 +28,7 @@ public interface ModelListener {
 
     /**
      * Passes along a list of values for flags in a predetermined order.
-     * @param values
+     * @param values [N, Z, V, C] order
      */
     void flagUpdate(boolean[] values);
 

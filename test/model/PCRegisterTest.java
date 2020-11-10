@@ -19,7 +19,7 @@ class PCRegisterTest {
     /**
      * The PCRegister upon which the tests will be performed.
      */
-    private PCRegister pc = new PCRegister();
+    private final PCRegister pc = new PCRegister();
 
     /**
      * Tests that the pc can be advanced normally.

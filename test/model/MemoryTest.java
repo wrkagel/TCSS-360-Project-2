@@ -17,7 +17,7 @@ RJ Alabado, Walter Kagel, Taehong Kim
  */
 class MemoryTest {
 
-    private Memory mem = new Memory();
+    private final Memory mem = new Memory();
 
     /**
      * Tests that the a byte can be stored and loaded from the minimum valid address 0x0000.
