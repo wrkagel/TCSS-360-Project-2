@@ -38,9 +38,10 @@ class FormatterTest {
 
     @Test
     void parsePseudoInstructionsBlock() {
-        testLines.add(new SourceLine(".BLOCK 5", 0));
+        testLines.add(new SourceLine("num: .BLOCK 5", 0));
         Formatter.parsePseudoInstructions(testLines, errorMessages);
-        for (int i = 0; i < 5; i++) {
+        assertEquals("num: .BYTE 00", testLines.get(0).toString());
+        for (int i = 1; i < 5; i++) {
             assertEquals(".BYTE 00", testLines.get(i).toString());
         }
     }
@@ -68,13 +69,5 @@ class FormatterTest {
         assertEquals(".BYTE -16", testLines.get(3).toString());
         assertEquals(".BYTE 8", testLines.get(4).toString());
         assertEquals(".BYTE 8", testLines.get(5).toString());
-    }
-
-    @Test
-    void parsePseudoInstructionsWordError() {
-        testLines.add(new SourceLine(".Word potato", 0));
-        testLines.add(new SourceLine(".WORD", 1));
-        testLines.add(new SourceLine(".WORD 10000000000", 2));
-        testLines.add(new SourceLine(".WORD -10000000000", 3));
     }
 }

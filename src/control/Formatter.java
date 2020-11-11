@@ -16,9 +16,10 @@ public class Formatter {
             SourceLine sourceLine = sourceLines.get(i);
             switch(sourceLine.getMnemonic()) {
                 //Turns the .ASCII pseudo-op into a series of .BYTE ops. One for each character.
-                case ".ASCII" -> {
+                case ASCII -> {
                     String value = sourceLine.getValue();
                     int lineNumber = sourceLine.getLineNumber();
+                    String symbol = sourceLine.getSymbol();
                     if (value.equals("")) {
                         errorMessages.add("Incorrect number of arguments for .ASCII pseudo-op at line " +
                                 lineNumber + ".\n");
@@ -26,6 +27,7 @@ public class Formatter {
                     }
                     sourceLines.remove(i);
                     boolean isEscape = false;
+                    boolean isFirst = true;
                     for (char c:value.toCharArray()) {
                         if (c == '\\') {
                             isEscape = true;
@@ -42,16 +44,21 @@ public class Formatter {
                                 break;
                             }
                         }
+                        if (isFirst) {
+                            sourceLines.add(i, new SourceLine(symbol + ": .BYTE " + ((byte) c), lineNumber));
+                            isFirst = false;
+                        }
                         sourceLines.add(i, new SourceLine(".BYTE " + ((byte) c), lineNumber));
                         i++;
                     }
                     i--;
                 }
                 //Turns the .BLOCK pseudo-op into a series of .BYTE 00 lines.
-                case ".BLOCK" -> {
+                case BLOCK -> {
 
                     String value = sourceLine.getValue();
                     int lineNumber = sourceLine.getLineNumber();
+                    String symbol = sourceLine.getSymbol();
                     if (value.equals("")) {
                         errorMessages.add("Incorrect number of arguments for .BLOCK at line " +
                                 lineNumber + ".\n");
@@ -70,6 +77,9 @@ public class Formatter {
                             break;
                         }
                         sourceLines.remove(i);
+                        sourceLines.add(i, new SourceLine((symbol + ": .BYTE 00"), lineNumber));
+                        i++;
+                        numberOfBytes--;
                         for (; numberOfBytes > 0; numberOfBytes--) {
                             sourceLines.add(i, new SourceLine(".BYTE 00", lineNumber));
                             i++;
@@ -80,9 +90,10 @@ public class Formatter {
                         errors = true;
                     }
                 }
-                case ".WORD" -> {
+                case WORD -> {
                     String value = sourceLine.getValue();
                     int lineNumber = sourceLine.getLineNumber();
+                    String symbol = sourceLine.getSymbol();
                     if (value.equals("")) {
                         errorMessages.add("Incorrect number of arguments for .ASCII pseudo-op at line " +
                                 lineNumber + "./n");
@@ -99,7 +110,8 @@ public class Formatter {
                         errors = true;
                         break;
                     }
-                    sourceLines.add(i, new SourceLine(".BYTE "  + ((byte) (wordValue >> 8)), lineNumber));
+                    sourceLines.add(i, new SourceLine(symbol + ": .BYTE "  +
+                            ((byte) (wordValue >> 8)), lineNumber));
                     i++;
                     sourceLines.add(i, new SourceLine(".BYTE " + ((byte) (wordValue & 0xFF)), lineNumber));
                 }
