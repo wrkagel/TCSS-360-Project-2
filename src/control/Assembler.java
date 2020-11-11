@@ -7,8 +7,6 @@ RJ Alabado, Walter Kagel, Taehong Kim
  */
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.PriorityQueue;
 
 /**
  * Will take in raw text or file name and will attempt to assemble based on pep/8 assembly language the text
@@ -54,11 +52,23 @@ public class Assembler {
      * @return whether the assembly completed without error (true), or had errors (false).
      */
     public boolean assembleSourceCode(String sourceCodeIn) {
-        var sourceLines = new ArrayList<>(Arrays.asList(sourceCodeIn.split("\n")));
-        if (!Formatter.removeCommentsAndEnd(sourceLines, errorMessages)) return false;
-        if (!Formatter.parsePseudoInstructions(sourceLines, errorMessages)) return false;
-        buildSymbolTable();
-        return true;
+        var rawSourceLines = sourceCodeIn.split("\n");
+        var sourceLines = new ArrayList<SourceLine>();
+        boolean noErrors = false;
+        for (int i = 0; i < rawSourceLines.length; i++) {
+            try {
+                SourceLine sourceLine = new SourceLine(rawSourceLines[i], i);
+                if (sourceLine.getMnemonic() != "") sourceLines.add(sourceLine);
+                if (sourceLine.getMnemonic().toUpperCase() == ".END") break;
+            } catch (Exception e) {
+                noErrors = true;
+                errorMessages.add(e.getMessage());
+            }
+        }
+        return noErrors &&
+                Formatter.parsePseudoInstructions(sourceLines, errorMessages) &&
+                buildSymbolTable(sourceLines) &&
+                buildMachineCode();
     }
 
     /**
@@ -86,9 +96,18 @@ public class Assembler {
         return errorMessages;
     }
 
+    /**
+     * Takes in the sourceLines after they have had all the pseudoInstructions changed into .BYTES for
+     * ease of determining addresses when building the symbol table.
+     * @param sourceLines an ArrayList of sourceLines that contains only those lines that concern the program
+     *                    directly. (No comments, blank lines, or anything after the .END pseudoInstruction.
+     * @return boolean false if errors occurred, true otherwise.
+     */
+    private boolean buildSymbolTable(ArrayList<SourceLine> sourceLines) {
+        return false;
+    }
 
-
-    private void buildSymbolTable() {
-
+    private boolean buildMachineCode(){
+        return false;
     }
 }

@@ -5,63 +5,28 @@ import java.util.ArrayList;
 public class Formatter {
 
     /**
-     * Helper method that removes all comments and anything past the end of the program.
-     * This also turns all of the text to upper case.
-     * Note that lines that contain only comments, but are before .END will be blank strings instead of being
-     * removed. This is done so that the line count for error message generation remains correct.
-     * @param sourceLines ArrayList containing unformatted lines of source code.
-     * @param errorMessages Used to store any error messages generated during the method.
-     * @return false if errors were generated, true otherwise.
-     */
-    public static boolean removeCommentsAndEnd(ArrayList<String> sourceLines, ArrayList<String> errorMessages) {
-        boolean isEnd = false;
-        for (int i = 0; i < sourceLines.size(); i++) {
-            String str = sourceLines.get(i).toUpperCase();
-            if (str.equals(".END")) {
-                isEnd = true;
-            }
-            if (isEnd) {
-                sourceLines.remove(i);
-                i--;
-            } else {
-                int commentIndex = str.indexOf(';');
-                if (commentIndex == -1) continue;
-                if (commentIndex == 0) {
-                    sourceLines.set(i, "");
-                } else {
-                    sourceLines.set(i, str.substring(0, commentIndex));
-                }
-            }
-        }
-        if (!isEnd) errorMessages.add("No .END sentinel found within the source code.\n");
-        return !isEnd;
-    }
-
-    /**
      * Turns pseudo ops into lines that are easier to convert into machine code. Replaces .ASCII, .BLOCK, and .WORD
      * with equivalent .BYTE lines.
      * @param sourceLines ArrayList containing the lines of source code with all non-instructions removed.
      * @return false if errors were generated, true otherwise.
      */
-    public static boolean parsePseudoInstructions(ArrayList<String> sourceLines, ArrayList<String> errorMessages) {
+    public static boolean parsePseudoInstructions(ArrayList<SourceLine> sourceLines, ArrayList<String> errorMessages) {
         boolean errors = false;
         for (int i = 0; i < sourceLines.size(); i++) {
-            String str = sourceLines.get(i);
-            if (str.length() == 0) continue;
-            String[] tokens = str.split(" ");
-            switch(tokens[0].toUpperCase()) {
+            SourceLine sourceLine = sourceLines.get(i);
+            switch(sourceLine.getMnemonic()) {
                 //Turns the .ASCII pseudo-op into a series of .BYTE ops. One for each character.
                 case ".ASCII" -> {
-                    if (tokens.length != 2) {
-                        errorMessages.add("Incorrect number of arguments for .ASCII pseudo-op on line " +
-                                + i + ".\n");
-                        errors = true;
-                        break;
+                    String value = sourceLine.getValue();
+                    int lineNumber = sourceLine.getLineNumber();
+                    if (value.equals("")) {
+                        errorMessages.add("Incorrect number of arguments for .ASCII pseudo-op at line " +
+                                lineNumber + ".\n");
+                        continue;
                     }
-                    String line = tokens[1];
                     sourceLines.remove(i);
                     boolean isEscape = false;
-                    for (char c:line.toCharArray()) {
+                    for (char c:value.toCharArray()) {
                         if (c == '\\') {
                             isEscape = true;
                             continue;
@@ -72,68 +37,71 @@ public class Formatter {
                             isEscape = false;
                             if (c == ' ') {
                                 errorMessages.add("Invalid escape sequence at line " +
-                                        i + ".\n");
+                                        lineNumber + ".\n");
                                 errors = true;
                                 break;
                             }
                         }
-                        sourceLines.add(i, ".BYTE " + ((byte) c));
+                        sourceLines.add(i, new SourceLine(".BYTE " + ((byte) c), lineNumber));
                         i++;
                     }
                     i--;
                 }
                 //Turns the .BLOCK pseudo-op into a series of .BYTE 00 lines.
                 case ".BLOCK" -> {
-                    if (tokens.length != 2) {
+
+                    String value = sourceLine.getValue();
+                    int lineNumber = sourceLine.getLineNumber();
+                    if (value.equals("")) {
                         errorMessages.add("Incorrect number of arguments for .BLOCK at line " +
-                                i + ".\n");
-                        errors = true;
-                        break;
+                                lineNumber + ".\n");
+                        continue;
                     }
                     try {
-                        int value;
-                        if (tokens[1].toUpperCase().startsWith("0X")) {
-                            value = Integer.parseInt(tokens[1].substring(2), 16);
+                        int numberOfBytes;
+                        if (value.toUpperCase().startsWith("0X")) {
+                            numberOfBytes = Integer.parseInt(value.substring(2), 16);
                         } else {
-                            value = Integer.parseInt(tokens[1]);
+                            numberOfBytes = Integer.parseInt(value);
                         }
-                        if (value < 1) {
-                            errorMessages.add("Argument for .BLOCK cannot be less than one. Error at line " + i + ".\n");
+                        if (numberOfBytes < 1) {
+                            errorMessages.add("Argument for .BLOCK cannot be less than one. Error at line " +
+                                    lineNumber + ".\n");
                             break;
                         }
                         sourceLines.remove(i);
-                        for (; value > 0; value--) {
-                            sourceLines.add(i, ".BYTE 00");
+                        for (; numberOfBytes > 0; numberOfBytes--) {
+                            sourceLines.add(i, new SourceLine(".BYTE 00", lineNumber));
                             i++;
                         }
                         i--;
                     } catch (Exception e) {
-                        errorMessages.add("Error parsing number for .BLOCK at line " + i + ".\n");
+                        errorMessages.add("Error parsing number for .BLOCK at line " + lineNumber + ".\n");
                         errors = true;
                     }
                 }
                 case ".WORD" -> {
-                    if (tokens.length != 2) {
-                        errorMessages.add("Incorrect number of arguments for .WORD pseudo-op at line " +
-                                i + ".\n");
-                        errors = true;
-                        break;
+                    String value = sourceLine.getValue();
+                    int lineNumber = sourceLine.getLineNumber();
+                    if (value.equals("")) {
+                        errorMessages.add("Incorrect number of arguments for .ASCII pseudo-op at line " +
+                                lineNumber + "./n");
                     }
-                    int value;
-                    if (tokens[1].toUpperCase().startsWith("0X")) {
-                        value = Integer.parseInt(tokens[1].substring(2), 16);
+                    int wordValue;
+                    if (value.toUpperCase().startsWith("0X")) {
+                        wordValue = Integer.parseInt(value.substring(2), 16);
                     } else {
-                        value = Integer.parseInt(tokens[1]);
+                        wordValue = Integer.parseInt(value);
                     }
                     sourceLines.remove(i);
-                    if (value > Short.MAX_VALUE || value < Short.MIN_VALUE) {
-                        errorMessages.add("Value too large to fit in a word at line " + i + ".\n");
+                    if (wordValue > Short.MAX_VALUE || wordValue < Short.MIN_VALUE) {
+                        errorMessages.add("Value cannot fit in size of word at line " + lineNumber + ".\n");
                         errors = true;
                         break;
                     }
-                    sourceLines.add(i, ".BYTE "  + ((byte) (value >> 8)));
+                    sourceLines.add(i, new SourceLine(".BYTE "  + ((byte) (wordValue >> 8)), lineNumber));
                     i++;
-                    sourceLines.add(i, ".BYTE " + ((byte) (value & 0xFF)));
+                    sourceLines.add(i, new SourceLine(".BYTE " + ((byte) (wordValue & 0xFF)), lineNumber));
                 }
             }
         }
