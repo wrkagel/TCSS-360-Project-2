@@ -190,7 +190,6 @@ public class Controller implements ModelListener, ViewListener {
         boolean success = assembler.assembleSourceCode(view.getSourceCode());
         if (success) {
             view.setObjectCode(assembler.getMachineCode());
-            view.setAsListing(assembler.getAssemblerListing());
             runObject();
         } else {
             JOptionPane.showMessageDialog(view, assembler.getErrorMessages());
@@ -201,7 +200,6 @@ public class Controller implements ModelListener, ViewListener {
         boolean success = assembler.assembleSourceCode(view.getSourceCode());
         if (success) {
             view.setObjectCode(assembler.getMachineCode());
-            view.setAsListing(assembler.getAssemblerListing());
             debugObject();
         } else {
             JOptionPane.showMessageDialog(view, assembler.getErrorMessages());

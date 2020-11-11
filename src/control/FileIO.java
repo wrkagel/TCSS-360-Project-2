@@ -85,10 +85,10 @@ public class FileIO {
                                     loop = false;
                                 }
                             }
-                        } else if (overwrite == JOptionPane.NO_OPTION) {
-                            continue;
                         } else {
-                            loop = false;
+                            if (overwrite != JOptionPane.NO_OPTION) {
+                                loop = false;
+                            }
                         }
                     }
                 } catch (IOException e) {

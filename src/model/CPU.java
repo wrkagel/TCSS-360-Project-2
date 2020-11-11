@@ -87,7 +87,7 @@ class CPU {
     /**
      * Used to give the CPU access to memory for reading instructions, loading, and storing.
      */
-    private Memory mem;
+    private final Memory mem;
 
     /**
      * Sets if the CPU updates the listener after every instruction or only after a stop instruction.

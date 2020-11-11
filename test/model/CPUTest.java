@@ -25,8 +25,6 @@ class CPUTest implements ModelListener {
 
     private CPU cpu;
 
-    private ArrayList<String> names;
-
     private ArrayList<Object> cpuValues;
 
     private String output;
@@ -38,7 +36,6 @@ class CPUTest implements ModelListener {
         mem = new Memory();
         cpu = new CPU(mem);
         cpu.addListener(this);
-        names = new ArrayList<>();
         cpuValues = new ArrayList<>();
         output = "";
         input = "";
