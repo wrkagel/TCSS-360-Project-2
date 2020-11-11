@@ -9,7 +9,7 @@ RJ Alabado, Walter Kagel, Taehong Kim
 /**
  * Builds and displays the GUI. Informs of user actions using the ViewListener.
  * @author Group 8, Lead: Taehong Kim
- * @version 11/04/2020
+ * @version 11/11/2020
  */
 import control.Controller;
 import control.ViewListener;
@@ -93,7 +93,7 @@ public class GUI extends JFrame implements ActionListener{
     /**Setting Output text area.**/
     private JTextArea Outputtext;
     /**Setting Line-End main Panel.**/
-    private JPanel LineEndPanel;
+    public JPanel LineEndPanel;
     /**Setting Memory Panel.**/
     private JTextArea Memory;
     /**Setting Scroll for memory panel.**/
@@ -107,9 +107,9 @@ public class GUI extends JFrame implements ActionListener{
     /**Setting edit menu.**/
     private JMenu Edit;
     /**Setting cut sub-menu.**/
-    private JMenuItem cutMenu;
+    private JMenuItem obtCutMenu;
     /**Setting paste sub-menu.**/
-    private JMenuItem pasteMenu;
+    private JMenuItem objpasteMenu;
     /**Setting Build menu.**/
     private JMenu Build;
     /**Setting RunSource menu.**/
@@ -166,6 +166,30 @@ public class GUI extends JFrame implements ActionListener{
     private JMenuItem RunObjectMenu;
     /**Setting debug Object menu Item**/
     private JMenuItem DebugObjectMenu;
+    /**Setting source cut menu Item**/
+    private JMenuItem srcCutMenu;
+    /**Setting source paste menu Item**/
+    private JMenuItem srcpasteMenu;
+    /**Setting step panel**/
+    private JPanel steppanel;
+    /**Setting step button in step panel**/
+    private JButton stepbutton;
+    /**Setting resume button in step panel**/
+    private JButton resumebutton;
+    /**Setting run object button**/
+    private JButton runObjectButton;
+    /**Setting run source code button**/
+    private JButton runCodeButton;
+    /**Setting New button**/
+    private JButton newButton;
+    /**Setting debug source button**/
+    private JButton startDebuggingButton;
+    /**Setting assemble button**/
+    private JButton assembleButton;
+    /**Setting debug object button**/
+    private JButton debugObjectButton;
+    /**Setting save button**/
+    private JButton saveButton;
 
     public static void main(String []args) {
         new GUI();
@@ -201,54 +225,61 @@ public class GUI extends JFrame implements ActionListener{
      * Constructor Up-Panel with buttons.
      */
     private void UpPanel() {
-        /*setting main UpPanel*/
+        /**setting main UpPanel*/
         upPanel = new JPanel();
         upPanel.setLayout(new GridLayout(1,7));
         upPanel.setPreferredSize(new Dimension (screenSize.width*3/4,screenSize.height*3/50));
-        /*setting buttons on main upPanel*/
-        final JButton newButton = new JButton("New");
+
+        /**setting buttons on main upPanel*/
+        newButton = new JButton("New");
         newButton.setFont(myFont);
         newButton.setBackground(Color.lightGray);
         newButton.addActionListener(this);
         newButton.setPreferredSize(new Dimension (screenSize.width/12,screenSize.height*3/50));
 
-        JButton startDebuggingButton = new JButton("Start Debugging");
+        /**Setting bebug Source button**/
+        startDebuggingButton = new JButton("Debug Source");
         startDebuggingButton.setFont(myFont);
         startDebuggingButton.setBackground(Color.lightGray);
         startDebuggingButton.addActionListener(this);
         startDebuggingButton.setPreferredSize(new Dimension (screenSize.width/12,screenSize.height*3/50));
 
-        JButton runObjectButton = new JButton("Run Object");
+        /**Setting run object button**/
+        runObjectButton = new JButton("Run Object");
+        runObjectButton.setEnabled(true);
         runObjectButton.setFont(myFont);
         runObjectButton.setBackground(Color.lightGray);
         runObjectButton.addActionListener(this);
         runObjectButton.setPreferredSize(new Dimension (screenSize.width/12,screenSize.height*3/50));
 
-        JButton debugObjectButton = new JButton("Debug Object");
+        /**Setting bebug object button**/
+        debugObjectButton = new JButton("Debug Object");
         debugObjectButton.setFont(myFont);
         debugObjectButton.setBackground(Color.lightGray);
         debugObjectButton.addActionListener(this);
         debugObjectButton.setPreferredSize(new Dimension (screenSize.width/12,screenSize.height*3/50));
 
-        JButton saveButton = new JButton("Save");
+        /**Setting save button**/
+        saveButton = new JButton("Save");
         saveButton.setBackground(Color.lightGray);
         saveButton.addActionListener(this);
         saveButton.setFont(myFont);
         saveButton.setPreferredSize(new Dimension (screenSize.width/12,screenSize.height*3/50));
 
-        JButton runCodeButton = new JButton("Run Source");
+        /**Setting run Source button**/
+        runCodeButton = new JButton("Run Source");
         runCodeButton.setBackground(Color.lightGray);
         runCodeButton.addActionListener(this);
         runCodeButton.setFont(myFont);
         runCodeButton.setPreferredSize(new Dimension (screenSize.width/12,screenSize.height*3/50));
-
-        JButton assembleButton = new JButton("Assemble");
+        /**Setting bebug Source button**/
+        assembleButton = new JButton("Assemble");
         assembleButton.setBackground(Color.lightGray);
         assembleButton.addActionListener(this);
         assembleButton.setFont(myFont);
         assembleButton.setPreferredSize(new Dimension (screenSize.width/12,screenSize.height*3/50));
 
-        /*Setting empty panels to fill empty areas of upPanel*/
+        /**Setting empty panels to fill empty areas of upPanel*/
         JPanel emptyPanel = new JPanel();
         emptyPanel.setLayout(new GridLayout(1,1));
         emptyPanel.setPreferredSize(new Dimension (screenSize.width/12,screenSize.height*3/50));
@@ -256,34 +287,32 @@ public class GUI extends JFrame implements ActionListener{
         emptyPanel2.setLayout(new GridLayout(1,1));
         emptyPanel2.setPreferredSize(new Dimension (screenSize.width/12,screenSize.height*3/50));
 
-        /*Adding whole buttons in UpPanel*/
+        /**Adding whole buttons in UpPanel*/
         upPanel.add(newButton);upPanel.add(saveButton);upPanel.add(runObjectButton);upPanel.add(debugObjectButton);
         upPanel.add(assembleButton); upPanel.add(runCodeButton); upPanel.add(startDebuggingButton);
 
 
     }
 
-    /**
-     * Constructor for line start Panel with components small panels.
-     */
+    /** Constructor for line start Panel with components small panels.*/
     private void LineStartPanel () {
-        /*setting main Line Start Panel*/
+        /**setting main Line Start Panel*/
         lineStartPanel = new JPanel();
         lineStartPanel.setLayout(new GridLayout(3,1));
         lineStartPanel.setBorder(new TitledBorder(null, "CODE", TitledBorder.CENTER, TitledBorder.TOP, myFont, null));
         lineStartPanel.setPreferredSize(new Dimension(screenSize.width/4,screenSize.height*9/14));
-        /*Create first sub-panel with Tabbedpane*/
+        /**Create first sub-panel with Tabbedpane*/
         tabbedPane = new JTabbedPane();
         tabbedPane.setSize(screenSize.width/4,screenSize.height*3/14);
         tabbedPane.setFont(myFont);
 
-        /*Setting source code and trace tabs with text areas and add to main Line Start Panel*/
+        /**Setting source code and trace tabs with text areas and add to main Line Start Panel*/
         sourceTab = new JTextArea("Please type your Souce Code here",screenSize.width/4,screenSize.height*3/14);
         sourceTab.setFont(myFont);
         tabbedPane.addTab("Code", sourceTab);
         lineStartPanel.add(tabbedPane);
 
-        /*Setting object code text areas and add to main Line Start Panel*/
+        /**Setting object code text areas and add to main Line Start Panel*/
         ObjCode = new JTextArea(null,screenSize.width/4,screenSize.height*3/14);
         ObjCode.setFont(myFont);
         ObjCode.setBorder(new TitledBorder(null, "Object Code", TitledBorder.CENTER, TitledBorder.TOP, myFont, null));
@@ -298,9 +327,7 @@ public class GUI extends JFrame implements ActionListener{
         lineStartPanel.add(AsListing);
     }
 
-    /**
-     * Constructor for main Central Panel with component small panels.
-     */
+    /** Constructor for main Central Panel with component small panels.*/
     private void CentralPanel() {
         /*setting main Center Panel*/
         CenterPanel = new JPanel();
@@ -314,13 +341,12 @@ public class GUI extends JFrame implements ActionListener{
         CpuPanel.setPreferredSize(new Dimension(screenSize.width/4,screenSize.height*3/14));
         /*setting  top Panel*/
         CpupanelTop = new JPanel();
-        CpupanelTop.setLayout(new GridLayout(1,9));
+        CpupanelTop.setLayout(new GridLayout(1,10));
         CpupanelTop.setSize(screenSize.width/4,screenSize.height*1/112);
         //setPreferredSize(new Dimension(screenSize.width/4,screenSize.height*1/112));
         /*Calling components for buttons, labels, and text areas.*/
         CpuChecker();
         downCpuPanel();
-
         AccumulatorPanel();
         IndexRegister();
         StackPointer();
@@ -328,14 +354,32 @@ public class GUI extends JFrame implements ActionListener{
         InstructionPanel();
         OperandSpecifier();
         Operand();
+        step();
         BatchIO();
     }
+    /** Constructor for step, resume buttons and step panel**/
+    private void step(){
+        steppanel = new JPanel();
+        steppanel.setFont(myFont2);
+        steppanel.setPreferredSize(new Dimension(screenSize.width/12,screenSize.height*3/112));
+        Cpupaneldown.add(steppanel);
+        stepbutton = new JButton("Single Step");
+        stepbutton.addActionListener(this);
+        stepbutton.setEnabled(false);
+        stepbutton.setPreferredSize(new Dimension(screenSize.width/12,screenSize.height*3/112));
+        stepbutton.setFont(myFont2);
+        Cpupaneldown.add(stepbutton);
+        resumebutton = new JButton("Resuem");
+        resumebutton.addActionListener(this);
+        resumebutton.setPreferredSize(new Dimension(screenSize.width/12,screenSize.height*3/112));
+        resumebutton.setFont(myFont2);
+        resumebutton.setEnabled(false);
+        Cpupaneldown.add(resumebutton);
+    }
 
-    /**
-     * Constructor N,Z,V,C checker with labels for cpu panel.
-     */
+    /** Constructor N,Z,V,C checker with labels for cpu panel.**/
     private void CpuChecker() {
-        /*adding check box with labels N.*/
+        /**adding check box with labels N.*/
         Nmark = new JLabel("N");
         Nmark.setFont(myFont);
         Nmark.setSize(new Dimension(screenSize.width*1/112,screenSize.height*1/112));
@@ -345,7 +389,7 @@ public class GUI extends JFrame implements ActionListener{
         Nbox.setSize(new Dimension(screenSize.width*1/112,screenSize.height*1/112));
         CpupanelTop.add(Nbox);
 
-        /*adding check box with labels Z.*/
+        /**adding check box with labels Z.*/
         Zmark = new JLabel("Z");
         Zmark.setFont(myFont);
         Zmark.setSize(new Dimension(screenSize.width*1/112,screenSize.height*1/112));
@@ -355,7 +399,7 @@ public class GUI extends JFrame implements ActionListener{
         Zbox.setSize(new Dimension(screenSize.width*1/112,screenSize.height*1/112));
         CpupanelTop.add(Zbox);
 
-        /*adding check box with labels V.*/
+        /**adding check box with labels V.*/
         Vmark = new JLabel("V");
         Vmark.setFont(myFont);
         Vmark.setSize(new Dimension(screenSize.width*1/112,screenSize.height*1/112));
@@ -365,7 +409,7 @@ public class GUI extends JFrame implements ActionListener{
         Vbox.setSize(new Dimension(screenSize.width*1/112,screenSize.height*1/112));
         CpupanelTop.add(Vbox);
 
-        /*adding check box with labels C.*/
+        /**adding check box with labels C.*/
         Cmark = new JLabel("C");
         Cmark.setFont(myFont);
         Cmark.setSize(new Dimension(screenSize.width*1/112,screenSize.height*1/112));
@@ -378,7 +422,7 @@ public class GUI extends JFrame implements ActionListener{
     }
 
     /**
-     * Constructor for down of cpu penl in main cpu penl.
+     * Constructor for down of cpu panel in main cpu panel.
      */
     private void downCpuPanel() {
         /*Setting down of CPU panel*/
@@ -555,7 +599,7 @@ public class GUI extends JFrame implements ActionListener{
     /**
      * Constructor for Line end Panel with components panels and scroll.
      */
-    private void LineEndPanel() {
+    public void LineEndPanel() {
         LineEndPanel = new JPanel();
         LineEndPanel.setLayout(new GridLayout(1,1));
         LineEndPanel.setBorder(new TitledBorder(null, "Memory", TitledBorder.CENTER, TitledBorder.TOP, myFont, null));
@@ -573,7 +617,7 @@ public class GUI extends JFrame implements ActionListener{
      * Constructor for Menu Bar with sub-menu.
      */
     private void MenuBar() {
-        /*Create file menu with sub-menu*/
+        /**Create file menu with sub-menu*/
         menuBar = new JMenuBar();
         File = new JMenu("File");
         File.setFont(myFont);
@@ -586,24 +630,32 @@ public class GUI extends JFrame implements ActionListener{
         File.add(newMenu);
         File.add(openMenu);
 
-        /*Create edit menu with sub-menu*/
+        /**Create edit menu with sub-menu*/
         Edit = new JMenu("Edit");
         Edit.setFont(myFont);
-        cutMenu = new JMenuItem("Cut Object Code");
-        cutMenu.addActionListener(this);
-        pasteMenu = new JMenuItem("Paste into Object Code");
-        pasteMenu.addActionListener(this);
-        cutMenu.setFont(myFont);
-        pasteMenu.setFont(myFont);
-        Edit.add(cutMenu);
-        Edit.add(pasteMenu);
+        obtCutMenu = new JMenuItem("Cut Object Code");
+        obtCutMenu.addActionListener(this);
+        objpasteMenu = new JMenuItem("Paste into Object Code");
+        objpasteMenu.addActionListener(this);
+        srcCutMenu = new JMenuItem("Cut Assembly Code");
+        srcCutMenu.addActionListener(this);
+        srcpasteMenu = new JMenuItem("Paste into Assembly Code");
+        srcpasteMenu.addActionListener(this);
+        srcCutMenu.setFont(myFont);
+        srcpasteMenu.setFont(myFont);
+        obtCutMenu.setFont(myFont);
+        objpasteMenu.setFont(myFont);
+        Edit.add(obtCutMenu);
+        Edit.add(objpasteMenu);
+        Edit.add(srcCutMenu);
+        Edit.add(srcpasteMenu);
 
-        /*Create build menu with sub-menu*/
+        /**Create build menu with sub-menu*/
         Build = new JMenu("Build");
         Build.setFont(myFont);
         RunSourceMenu = new JMenuItem("Run Source");
         RunSourceMenu.addActionListener(this);
-        StartDebuggingMenu = new JMenuItem("Start Debugging");
+        StartDebuggingMenu = new JMenuItem("Debug Source");
         StartDebuggingMenu.addActionListener(this);
         RunObjectMenu = new JMenuItem("Run Object");
         RunObjectMenu.addActionListener(this);
@@ -618,7 +670,7 @@ public class GUI extends JFrame implements ActionListener{
         Build.add(RunObjectMenu);
         Build.add(DebugObjectMenu);
 
-        /*Adding all menu buttons to menubar*/
+        /**Adding all menu buttons to menubar*/
         menuBar.add(File);menuBar.add(Build);menuBar.add(Edit);
         frame.setJMenuBar(menuBar);
     }
@@ -635,24 +687,99 @@ public class GUI extends JFrame implements ActionListener{
          * Button input
          */
         if (userinput.equals("New")) {
+            sourceTab.setText("");
+            ObjCode.setText("");
+            AsListing.setText("");
+            Outputtext.setText("");
+            BatchIO.setText("");
+            stepbutton.setEnabled(false);
+            resumebutton.setEnabled(false);
             ViewListner.buttonPushed("New");
         } else if (userinput.equals("Run Source")) {
             ViewListner.buttonPushed("Run Source");
         } else if (userinput.equals("Save")) {
             ViewListner.buttonPushed("Save");
-        } else if (userinput.equals("Start Debugging")) {
-            ViewListner.buttonPushed("Start Debugging");
+        } else if (userinput.equals("Debug Source")){
+            ViewListner.buttonPushed("Debug Source");
+            /**Making step and resume buttons enable**/
+            stepbutton.setEnabled(true);
+            resumebutton.setEnabled(true);
+            /**Buttons enable**/
+            runObjectButton.setEnabled(false);
+            runCodeButton.setEnabled(false);
+            startDebuggingButton.setEnabled(false);
+            runCodeButton.setEnabled(false);
+            newButton.setEnabled(false);
+            assembleButton.setEnabled(false);
+            debugObjectButton.setEnabled(false);
+            /**File menu options disable**/
+            newMenu.setEnabled(false);
+            openMenu.setEnabled(false);
+            /**Build menu options disable**/
+            RunSourceMenu.setEnabled(false);
+            StartDebuggingMenu.setEnabled(false);
+            RunObjectMenu.setEnabled(false);
+            DebugObjectMenu.setEnabled(false);
+            /**Edit menu options disable**/
+            obtCutMenu.setEnabled(false);
+            objpasteMenu.setEnabled(false);
+            srcCutMenu.setEnabled(false);
+            srcpasteMenu.setEnabled(false);
+            /**Input area diable**/
+            ObjCode.setEditable(false);
+            sourceTab.setEditable(false);
+            BatchIO.setEditable(false);
         } else if (userinput.equals("Assemble")) {
             ViewListner.buttonPushed("Assemble");
         } else if (userinput.equals("Debug Object")) {
-            ViewListner.buttonPushed("Debug Object");
+            /**Making step and resume buttons enable**/
+            stepbutton.setEnabled(true);
+            resumebutton.setEnabled(true);
+            /**Buttons enable**/
+            runObjectButton.setEnabled(false);
+            runCodeButton.setEnabled(false);
+            startDebuggingButton.setEnabled(false);
+            runCodeButton.setEnabled(false);
+            newButton.setEnabled(false);
+            assembleButton.setEnabled(false);
+            debugObjectButton.setEnabled(false);
+            /**File menu options disable**/
+            newMenu.setEnabled(false);
+            openMenu.setEnabled(false);
+            /**Build menu options disable**/
+            RunSourceMenu.setEnabled(false);
+            StartDebuggingMenu.setEnabled(false);
+            RunObjectMenu.setEnabled(false);
+            DebugObjectMenu.setEnabled(false);
+            /**Edit menu options disable**/
+            obtCutMenu.setEnabled(false);
+            objpasteMenu.setEnabled(false);
+            srcCutMenu.setEnabled(false);
+            srcpasteMenu.setEnabled(false);
+            /**Input area diable**/
+            ObjCode.setEditable(false);
+            sourceTab.setEditable(false);
+            BatchIO.setEditable(false);
         } else if (userinput.equals("Run Object")) {
             ViewListner.buttonPushed("Run Object");
+        } else if (userinput.equals("Single Step")){
+            ViewListner.buttonPushed("Single Step");
+        } else if (userinput.equals("Resume")){
+            ViewListner.buttonPushed("Resume");
         }
+
         /**
          * file menu input
          */
         else if (userinput.equals("New")) {
+            /**Reset the input areas and disable step and resume buttons**/
+            sourceTab.setText("");
+            ObjCode.setText("");
+            AsListing.setText("");
+            Outputtext.setText("");
+            BatchIO.setText("");
+            stepbutton.setEnabled(false);
+            resumebutton.setEnabled(false);
             ViewListner.fileSelection("New");
         } else if (userinput.equals("Open")) {
             ViewListner.fileSelection("Open");
@@ -662,12 +789,67 @@ public class GUI extends JFrame implements ActionListener{
          */
         else if (userinput.equals("Run Source")) {
             ViewListner.buildSelection("Run Source");
-        } else if (userinput.equals("Start Debugging")) {
-            ViewListner.buildSelection("Start Debugging");
+        } else if (userinput.equals("Debug Source")) {
+            /**Making step and resume buttons enable**/
+            stepbutton.setEnabled(true);
+            resumebutton.setEnabled(true);
+            /**Buttons enable**/
+            runObjectButton.setEnabled(false);
+            runCodeButton.setEnabled(false);
+            startDebuggingButton.setEnabled(false);
+            runCodeButton.setEnabled(false);
+            newButton.setEnabled(false);
+            assembleButton.setEnabled(false);
+            debugObjectButton.setEnabled(false);
+            /**File menu options disable**/
+            newMenu.setEnabled(false);
+            openMenu.setEnabled(false);
+            /**Build menu options disable**/
+            RunSourceMenu.setEnabled(false);
+            StartDebuggingMenu.setEnabled(false);
+            RunObjectMenu.setEnabled(false);
+            DebugObjectMenu.setEnabled(false);
+            /**Edit menu options disable**/
+            obtCutMenu.setEnabled(false);
+            objpasteMenu.setEnabled(false);
+            srcCutMenu.setEnabled(false);
+            srcpasteMenu.setEnabled(false);
+            /**Input area diable**/
+            ObjCode.setEditable(false);
+            sourceTab.setEditable(false);
+            BatchIO.setEditable(false);
         } else if (userinput.equals("Run Object")) {
             ViewListner.buildSelection("Run Object");
         } else if (userinput.equals("Debug Object")) {
             ViewListner.buildSelection("Debug Object");
+            /**Making step and resume buttons enable**/
+            stepbutton.setEnabled(true);
+            resumebutton.setEnabled(true);
+            /**Buttons enable**/
+            runObjectButton.setEnabled(false);
+            runCodeButton.setEnabled(false);
+            startDebuggingButton.setEnabled(false);
+            runCodeButton.setEnabled(false);
+            newButton.setEnabled(false);
+            assembleButton.setEnabled(false);
+            debugObjectButton.setEnabled(false);
+            /**File menu options disable**/
+            newMenu.setEnabled(false);
+            openMenu.setEnabled(false);
+            /**Build menu options disable**/
+            RunSourceMenu.setEnabled(false);
+            StartDebuggingMenu.setEnabled(false);
+            RunObjectMenu.setEnabled(false);
+            DebugObjectMenu.setEnabled(false);
+            /**Edit menu options disable**/
+            obtCutMenu.setEnabled(false);
+            objpasteMenu.setEnabled(false);
+            srcCutMenu.setEnabled(false);
+            srcpasteMenu.setEnabled(false);
+            /**Input area diable**/
+            ObjCode.setEditable(false);
+            sourceTab.setEditable(false);
+            BatchIO.setEditable(false);
         }
         /**
          * edit menu input
@@ -676,7 +858,12 @@ public class GUI extends JFrame implements ActionListener{
             ObjCode.cut();
         } else if (userinput.equals("Paste into Object Code")) {
             ObjCode.paste();
+        } else if (userinput.equals("Cut Assembly Code")) {
+            sourceTab.cut();
+        } else if (userinput.equals("Paste into Assembly Code")) {
+            sourceTab.paste();
         }
+
     }
 
     /**
@@ -761,6 +948,7 @@ public class GUI extends JFrame implements ActionListener{
         sourceTab.setText(str);
     }
 
+
     /**
      * Setter for Assembler listing
      * @param str string
@@ -768,7 +956,7 @@ public class GUI extends JFrame implements ActionListener{
     public void setAsListing(String str){
         AsListing.setText(AsListing.getText()+str);
     }
-    
+
     /**
      * setter for Nbox status
      * @param value boolean value
@@ -824,7 +1012,6 @@ public class GUI extends JFrame implements ActionListener{
     public String getAsListing(){
         return AsListing.getText();
     }
-
     /**
      * getter batch input
      * @return batch input character
@@ -832,9 +1019,94 @@ public class GUI extends JFrame implements ActionListener{
     public String getBatchInput(){
         return BatchIO.getText();
     }
+    /**
+     * getter output result
+     * @return Strings of output
+     */
+    public String getoutput(){ return Outputtext.getText();}
 
+    /**
+     * getter Nbox status
+     * @return boolean value of current Nbox
+     */
+    public boolean getNbox(){ return Nbox.isSelected();}
+    /**
+     * getter Vbox status
+     * @return boolean value of current Vbox
+     */
+    public boolean getVbox(){ return Vbox.isSelected();}
+
+    /**
+     * getter Zbox status
+     * @return boolean value of current Zbox
+     */
+    public boolean getZbox(){ return Zbox.isSelected();}
+
+    /**
+     * getter Cbox status
+     * @return boolean value of current Cbox
+     */
+    public boolean getCbox(){ return Cbox.isSelected();}
+
+    /**
+     * getter Memory information
+     * @return String current info of memory
+     */
+    public String getMemory(){return Memory.getText();}
+
+    /**
+     * getter first and second accumulator values
+     * @return string of first and second accumulator adding values
+     */
+    public String getAccumulator(){return Accumulatorout1.getText()+" "+Accumulatorout2.getText();}
+
+    /**
+     * getter first and second IndexRegister values
+     * @return string of first and second IndexRegister adding values
+     */
+    public String getIndexRegister(){return IndexRegister1.getText()+" "+IndexRegister2.getText();}
+
+    /**
+     * getter first and second StackPointer values
+     * @return string of first and second StackPointer adding values
+     */
+    public String getStackPointer(){return StackPointer1.getText()+" "+StackPointer2.getText();}
+
+    /**
+     * getter first and second ProgramCounter values
+     * @return string of first and second ProgramCounter adding values
+     */
+    public String getProgramCounter(){return ProgramCounterout1.getText()+" "+ProgramCounterout2.getText();}
+
+    /**
+     * getter first and second Instruction values
+     * @return string of first and second Instruction adding values
+     */
+    public String getInstruction(){return Instructionout1.getText()+" "+Instructionout2.getText();}
+
+    /**
+     * getter first and second OperandSpecifier values
+     * @return string of first and second OperandSpecifier adding values
+     */
+    public String getOperandSpecifier(){return OperandSpecifier1.getText()+" "+OperandSpecifier2.getText();}
+
+    /**
+     * getter first and second Operand values
+     * @return string of first and second Operand adding values
+     */
+    public String getOperand(){return Operand1.getText()+" "+Operand2.getText();}
+
+    /**
+     * Setter for BatchInput
+     */
+    public void setBatchInput(String src) {BatchIO.setText(src); }
+
+    /**
+     * add View listener
+     * @param controller
+     */
     public void addViewListener(Controller controller) {
         ViewListner = controller;
     }
-}
 
+}
