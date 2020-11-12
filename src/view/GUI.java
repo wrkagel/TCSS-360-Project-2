@@ -937,7 +937,7 @@ public class GUI extends JFrame implements ActionListener{
      * @param str string
      */
     public void setObjectCode(String str){
-        ObjCode.setText(ObjCode.getText()+str);
+        ObjCode.setText(str);
     }
 
     /**
@@ -954,7 +954,7 @@ public class GUI extends JFrame implements ActionListener{
      * @param str string
      */
     public void setAsListing(String str){
-        AsListing.setText(AsListing.getText()+str);
+        AsListing.setText(str);
     }
 
     /**

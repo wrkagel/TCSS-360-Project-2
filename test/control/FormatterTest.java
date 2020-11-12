@@ -20,7 +20,7 @@ class FormatterTest {
     }
 
     @Test
-    void parsePseudoInstructionsASCII() {
+    void testParsePseudoInstructionsASCII() {
         testLines.add(new SourceLine(".ASCII \"\\\"Testing\\\"\"", 0));
         Formatter.parsePseudoInstructions(testLines, errorMessages);
         char[] test = "\"Testing\"".toCharArray();
@@ -30,14 +30,14 @@ class FormatterTest {
     }
 
     @Test
-    void parsePseudoInstructionsASCIIError() {
+    void testParsePseudoInstructionsASCIIError() {
         testLines.add(new SourceLine(".ASCII", 1));
         Formatter.parsePseudoInstructions(testLines, errorMessages);
         assertEquals("Incorrect number of arguments for .ASCII pseudo-op at line 1.\n", errorMessages.get(0));
     }
 
     @Test
-    void parsePseudoInstructionsBlock() {
+    void testParsePseudoInstructionsBlockDecimal() {
         testLines.add(new SourceLine("num: .BLOCK 5", 0));
         Formatter.parsePseudoInstructions(testLines, errorMessages);
         assertEquals("num: .BYTE 00", testLines.get(0).toString());
@@ -47,7 +47,17 @@ class FormatterTest {
     }
 
     @Test
-    void parsePseudoInstructionsBlockError() {
+    void testParsePseudoInstructionsBlockHex() {
+        testLines.add(new SourceLine("num: .BLOCK 0x11", 0));
+        Formatter.parsePseudoInstructions(testLines, errorMessages);
+        assertEquals("num: .BYTE 00", testLines.get(0).toString());
+        for (int i = 1; i < 17; i++) {
+            assertEquals(".BYTE 00", testLines.get(i).toString());
+        }
+    }
+
+    @Test
+    void testParsePseudoInstructionsBlockError() {
         testLines.add(new SourceLine(".Block 22.", 1));
         testLines.add(new SourceLine(".Block -22", 2));
         testLines.add(new SourceLine(".BLOCK", 3));
@@ -58,7 +68,7 @@ class FormatterTest {
     }
 
     @Test
-    void parsePseudoInstructionsWord() {
+    void testParsePseudoInstructionsWord() {
         testLines.add(new SourceLine(".WORD 200", 0));
         testLines.add(new SourceLine(".WORD -4112", 1));
         testLines.add(new SourceLine(".WORD 0x0808", 2));
@@ -69,5 +79,27 @@ class FormatterTest {
         assertEquals(".BYTE -16", testLines.get(3).toString());
         assertEquals(".BYTE 8", testLines.get(4).toString());
         assertEquals(".BYTE 8", testLines.get(5).toString());
+    }
+
+    @Test
+    void testInvalidEscapeSequence() {
+        testLines.add(new SourceLine("seven: .ASCII \"test\\q\"", 0));
+        Formatter.parsePseudoInstructions(testLines, errorMessages);
+        assertEquals("Invalid escape sequence at line 0.\n", errorMessages.get(0));
+    }
+
+    @Test
+    void testAsciiByteLiteral() {
+        testLines.add(new SourceLine(".ASCII \"\\x55\"", 0));
+        Formatter.parsePseudoInstructions(testLines, errorMessages);
+        assertEquals(Mnemonic.BYTE, testLines.get(0).getMnemonic());
+        assertEquals("85", testLines.get(0).getValue());
+    }
+
+    @Test
+    void testAsciiByteLiteralError() {
+        testLines.add(new SourceLine(".ASCII \"\\xzoo\"", 0));
+        Formatter.parsePseudoInstructions(testLines, errorMessages);
+        assertEquals("Unable to parse byte literal after \\x at line 0.\n", errorMessages.get(0));
     }
 }

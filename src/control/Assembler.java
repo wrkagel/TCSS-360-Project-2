@@ -29,7 +29,7 @@ public class Assembler {
     /**
      * Stores all error messages generated during assembly.
      */
-    private final ArrayList<String> errorMessages;
+    private ArrayList<String> errorMessages;
 
     private HashMap<String, Short> symbolTable;
 
@@ -53,7 +53,9 @@ public class Assembler {
     public boolean assembleSourceCode(String sourceCodeIn) {
         var rawSourceLines = sourceCodeIn.split("\n");
         var sourceLines = new ArrayList<SourceLine>();
-        boolean noErrors = false;
+        errorMessages = new ArrayList<>();
+        machineCode = "";
+        boolean noErrors = true;
         boolean hasEnd = false;
         for (int i = 0; i < rawSourceLines.length; i++) {
             try {
@@ -64,7 +66,7 @@ public class Assembler {
                     break;
                 }
             } catch (Exception e) {
-                noErrors = true;
+                noErrors = false;
                 errorMessages.add(e.getMessage());
             }
         }
@@ -111,23 +113,27 @@ public class Assembler {
      * @return boolean false if errors occurred, true otherwise.
      */
     private boolean buildSymbolTable(ArrayList<SourceLine> sourceLines) {
-        return false;
+        return true;
     }
 
     /**
      * Takes in the sourceLines after they have been parsed for pseudo-ops and after the symbol table has been built,
      * then builds and stores the machine code into the machine code string.
-     * @param sourceLines
+     * @param sourceLines ArrayList of SourceLine
      * @return boolean false if errors occurred, true otherwise.
      */
     private boolean buildMachineCode(ArrayList<SourceLine> sourceLines){
         boolean errors = false;
+        StringBuilder sb = new StringBuilder();
         for(SourceLine sourceLine:sourceLines) {
-            StringBuilder sb = new StringBuilder();
             String value = sourceLine.getValue();
-            if (value.equals("")) {
+            if (sourceLine.getMnemonic() == Mnemonic.BYTE) {
+                int dec = Integer.parseInt(value);
+                String hex = Integer.toHexString(dec);
+                if(hex.length() < 2) hex = "0" + hex;
+                sb.append(hex);
+            } else if (value.equals("")) {
                 sb.append(sourceLine.getMnemonic().getMachineCode());
-                sb.append(" ");
             } else {
                 int modeIndex = value.indexOf(',');
                 if (modeIndex == -1) {
@@ -139,10 +145,10 @@ public class Assembler {
                 String[] tokens = value.split(",");
                 int operandValue;
                 try {
-                    AddressingMode mode = AddressingMode.valueOf(tokens[1]);
+                    AddressingMode mode = AddressingMode.valueOf(tokens[1].toUpperCase());
                     sb.append(sourceLine.getMnemonic().getMachineCode(mode));
                     sb.append(" ");
-                    if (tokens[0].toUpperCase().equals("0X")) {
+                    if (tokens[0].toUpperCase().startsWith("0X")) {
                         tokens[0] = tokens[0].substring(2);
                         if (tokens[0].length() > 4) throw new IllegalArgumentException();
                         operandValue = Integer.parseInt(tokens[0], 16);
@@ -170,12 +176,15 @@ public class Assembler {
                         continue;
                     }
                 }
-                sb.append(Integer.toHexString((operandValue & 0xFF00) >>> 8));
+                String hex = Integer.toHexString(operandValue & 0xFFFF);
+                while (hex.length() < 4) hex = "0" + hex;
+                sb.append(hex, 0, 2);
                 sb.append(" ");
-                sb.append(Integer.toHexString(operandValue & 0xFF));
-                sb.append(" ");
+                sb.append(hex, 2, 4);
             }
+            sb.append(" ");
         }
+        if (!errors) machineCode = sb.toString();
         return !errors;
     }
 }

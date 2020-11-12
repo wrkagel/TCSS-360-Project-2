@@ -5,7 +5,7 @@ import model.AddressingMode;
 public enum Mnemonic {
     STOP, MOVSPA, MOVFLGA, BR, BRLE, BRLT, BREQ, BRNE, BRGE, BRGT, BRV, BRC, CALL, NOTA, NOTI, NEGA, NEGI, ASLA, ASLI,
     ASRA, ASRI, ROLA, ROLI, RORA, RORI, DECI, DECO, STRO, CHARI, CHARO, RET0, RET1, RET2, RET3, RET4, RET5, RET6, RET7,
-    ADDSP, SUBSP, ADDA, ADDI, SUBA, SUBI, ANDA, ANDI, ORA, ORI, CPA, CPI, LDA, LDI, LDBYTEA, LDBYTEI, STRA, STRI,
+    ADDSP, SUBSP, ADDA, ADDI, SUBA, SUBI, ANDA, ANDI, ORA, ORI, CPA, CPI, LDA, LDI, LDBYTEA, LDBYTEI, STA, STI,
     STBYTEA, STBYTEI, ASCII, BLOCK, WORD, BYTE, END;
 
 
@@ -74,6 +74,9 @@ public enum Mnemonic {
             case RET7 -> {
                 return "5F";
             }
+            case END, ASCII, BLOCK, WORD, BYTE -> {
+                return "";
+            }
             default -> throw new IllegalArgumentException("Mnemonic requires addressing mode");
         }
     }
@@ -134,117 +137,117 @@ public enum Mnemonic {
                 if (mode == AddressingMode.I) throw new IllegalArgumentException("Not a valid addressing mode for " +
                         "an input instruction");
                 int i = mode.ordinal();
-                return "3" + Integer.toHexString(i);
+                return "3" + Integer.toHexString(i).toUpperCase();
             }
             case DECO -> {
                 int i = mode.ordinal() + 8;
-                return "3" + Integer.toHexString(i);
+                return "3" + Integer.toHexString(i).toUpperCase();
             }
             case STRO -> {
                 if (mode != AddressingMode.D && mode != AddressingMode.N && mode != AddressingMode.SF)
                     throw new IllegalArgumentException("Not a valid addressing mode for a string out instruction");
                 int i = mode.ordinal();
-                return "4" + Integer.toHexString(i);
+                return "4" + Integer.toHexString(i).toUpperCase();
             }
             case CHARI -> {
                 if (mode == AddressingMode.I) throw new IllegalArgumentException("Not a valid addressing mode for " +
                         "an input instruction");
                 int i = mode.ordinal() + 8;
-                return "4" + Integer.toHexString(i);
+                return "4" + Integer.toHexString(i).toUpperCase();
             }
             case CHARO -> {
                 int i = mode.ordinal();
-                return "5" + Integer.toHexString(i);
+                return "5" + Integer.toHexString(i).toUpperCase();
             }
             case ADDSP -> {
                 int i = mode.ordinal();
-                return "6" + Integer.toHexString(i);
+                return "6" + Integer.toHexString(i).toUpperCase();
             }
             case SUBSP -> {
                 int i = mode.ordinal() + 8;
-                return "6" + Integer.toHexString(i);
+                return "6" + Integer.toHexString(i).toUpperCase();
             }
             case ADDA -> {
                 int i = mode.ordinal();
-                return "7" + Integer.toHexString(i);
+                return "7" + Integer.toHexString(i).toUpperCase();
             }
             case ADDI -> {
                 int i = mode.ordinal() + 8;
-                return "7" + Integer.toHexString(i);
+                return "7" + Integer.toHexString(i).toUpperCase();
             }
             case SUBA -> {
                 int i = mode.ordinal();
-                return "8" + Integer.toHexString(i);
+                return "8" + Integer.toHexString(i).toUpperCase();
             }
             case SUBI -> {
                 int i = mode.ordinal() + 8;
-                return "8" + Integer.toHexString(i);
+                return "8" + Integer.toHexString(i).toUpperCase();
             }
             case ANDA -> {
                 int i = mode.ordinal();
-                return "9" + Integer.toHexString(i);
+                return "9" + Integer.toHexString(i).toUpperCase();
             }
             case ANDI -> {
                 int i = mode.ordinal() + 8;
-                return "9" + Integer.toHexString(i);
+                return "9" + Integer.toHexString(i).toUpperCase();
             }
             case ORA -> {
                 int i = mode.ordinal();
-                return "A" + Integer.toHexString(i);
+                return "A" + Integer.toHexString(i).toUpperCase();
             }
             case ORI -> {
                 int i = mode.ordinal() + 8;
-                return "A" + Integer.toHexString(i);
+                return "A" + Integer.toHexString(i).toUpperCase();
             }
             case CPA -> {
                 int i = mode.ordinal();
-                return "B" + Integer.toHexString(i);
+                return "B" + Integer.toHexString(i).toUpperCase();
             }
             case CPI -> {
                 int i = mode.ordinal() + 8;
-                return "B" + Integer.toHexString(i);
+                return "B" + Integer.toHexString(i).toUpperCase();
             }
             case LDA -> {
                 int i = mode.ordinal();
-                return "C" + Integer.toHexString(i);
+                return "C" + Integer.toHexString(i).toUpperCase();
             }
             case LDI -> {
                 int i = mode.ordinal() + 8;
-                return "C" + Integer.toHexString(i);
+                return "C" + Integer.toHexString(i).toUpperCase();
             }
             case LDBYTEA -> {
                 int i = mode.ordinal();
-                return "D" + Integer.toHexString(i);
+                return "D" + Integer.toHexString(i).toUpperCase();
             }
             case LDBYTEI -> {
                 int i = mode.ordinal() + 8;
-                return "D" + Integer.toHexString(i);
+                return "D" + Integer.toHexString(i).toUpperCase();
             }
-            case STRA -> {
+            case STA -> {
                 if (mode == AddressingMode.I) throw new IllegalArgumentException("Not a valid addressing mode for " +
                         "a store instruction");
                 int i = mode.ordinal();
-                return "E" + Integer.toHexString(i);
+                return "E" + Integer.toHexString(i).toUpperCase();
             }
-            case STRI -> {
+            case STI -> {
                 if (mode == AddressingMode.I) throw new IllegalArgumentException("Not a valid addressing mode for " +
                         "an store instruction");
                 int i = mode.ordinal() + 8;
-                return "E" + Integer.toHexString(i);
+                return "E" + Integer.toHexString(i).toUpperCase();
             }
             case STBYTEA -> {
                 if (mode == AddressingMode.I) throw new IllegalArgumentException("Not a valid addressing mode for " +
                         "an store instruction");
                 int i = mode.ordinal();
-                return "F" + Integer.toHexString(i);
+                return "F" + Integer.toHexString(i).toUpperCase();
             }
             case STBYTEI -> {
                 if (mode == AddressingMode.I) throw new IllegalArgumentException("Not a valid addressing mode for " +
                         "an store instruction");
                 int i = mode.ordinal() + 8;
-                return "F" + Integer.toHexString(i);
+                return "F" + Integer.toHexString(i).toUpperCase();
             }
-            case BYTE -> {
+            case ASCII, WORD, BLOCK, BYTE, END -> {
                 return "";
             }
             default -> throw new IllegalArgumentException("Error making machine code");
