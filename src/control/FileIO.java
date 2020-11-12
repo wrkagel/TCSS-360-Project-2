@@ -38,7 +38,7 @@ public class FileIO {
             } else {
                 try (Scanner sc = new Scanner(file)) {
                     while (sc.hasNext()) {
-                        sb.append(sc.nextLine());
+                        sb.append(sc.nextLine() + '\n');
                     }
                 } catch (FileNotFoundException e) {
                     JOptionPane.showMessageDialog(view, e.getMessage());

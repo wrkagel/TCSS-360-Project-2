@@ -12,6 +12,6 @@ RJ Alabado, Walter Kagel, Taehong Kim
  * @author Group 8, Lead: Walter Kagel
  * @version 10/27/2020
  */
-enum AddressingMode {
+public enum AddressingMode {
     I, D, N, S, SF, X, SX, SXF
 }

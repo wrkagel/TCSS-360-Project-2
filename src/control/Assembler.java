@@ -6,7 +6,10 @@ Group 8
 RJ Alabado, Walter Kagel, Taehong Kim
  */
 
+import model.AddressingMode;
+
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Will take in raw text or file name and will attempt to assemble based on pep/8 assembly language the text
@@ -23,17 +26,12 @@ public class Assembler {
      */
     private String machineCode;
 
-//    /**
-//     * Stores the assembly listing generated during assembly.
-//     */
-//    private String assemblerListing;
-
     /**
      * Stores all error messages generated during assembly.
      */
-    private final ArrayList<String> errorMessages;
+    private ArrayList<String> errorMessages;
 
-    //Actual assembler methods still need to be implemented.
+    private HashMap<String, Short> symbolTable;
 
     /**
      * Create and initialize an assembler.
@@ -42,6 +40,7 @@ public class Assembler {
         machineCode = "";
     //    assemblerListing = "";
         errorMessages = new ArrayList<>();
+        symbolTable = new HashMap<>();
     }
 
     /**
@@ -54,21 +53,31 @@ public class Assembler {
     public boolean assembleSourceCode(String sourceCodeIn) {
         var rawSourceLines = sourceCodeIn.split("\n");
         var sourceLines = new ArrayList<SourceLine>();
-        boolean noErrors = false;
+        errorMessages = new ArrayList<>();
+        machineCode = "";
+        boolean noErrors = true;
+        boolean hasEnd = false;
         for (int i = 0; i < rawSourceLines.length; i++) {
             try {
                 SourceLine sourceLine = new SourceLine(rawSourceLines[i], i);
-                if (sourceLine.getMnemonic() != "") sourceLines.add(sourceLine);
-                if (sourceLine.getMnemonic().toUpperCase() == ".END") break;
+                if (sourceLine.getMnemonic() != null) sourceLines.add(sourceLine);
+                if (sourceLine.getMnemonic() == Mnemonic.END) {
+                    hasEnd = true;
+                    break;
+                }
             } catch (Exception e) {
-                noErrors = true;
+                noErrors = false;
                 errorMessages.add(e.getMessage());
             }
+        }
+        if(!hasEnd) {
+            noErrors = false;
+            errorMessages.add("Source code does not contain the .END sentinel.");
         }
         return noErrors &&
                 Formatter.parsePseudoInstructions(sourceLines, errorMessages) &&
                 buildSymbolTable(sourceLines) &&
-                buildMachineCode();
+                buildMachineCode(sourceLines);
     }
 
     /**
@@ -98,16 +107,84 @@ public class Assembler {
 
     /**
      * Takes in the sourceLines after they have had all the pseudoInstructions changed into .BYTES for
-     * ease of determining addresses when building the symbol table.
+     * ease of determining addresses when building the symbol table. Builds the symbol table.
      * @param sourceLines an ArrayList of sourceLines that contains only those lines that concern the program
      *                    directly. (No comments, blank lines, or anything after the .END pseudoInstruction.
      * @return boolean false if errors occurred, true otherwise.
      */
     private boolean buildSymbolTable(ArrayList<SourceLine> sourceLines) {
-        return false;
+        return true;
     }
 
-    private boolean buildMachineCode(){
-        return false;
+    /**
+     * Takes in the sourceLines after they have been parsed for pseudo-ops and after the symbol table has been built,
+     * then builds and stores the machine code into the machine code string.
+     * @param sourceLines ArrayList of SourceLine
+     * @return boolean false if errors occurred, true otherwise.
+     */
+    private boolean buildMachineCode(ArrayList<SourceLine> sourceLines){
+        boolean errors = false;
+        StringBuilder sb = new StringBuilder();
+        for(SourceLine sourceLine:sourceLines) {
+            String value = sourceLine.getValue();
+            if (sourceLine.getMnemonic() == Mnemonic.BYTE) {
+                int dec = Integer.parseInt(value);
+                String hex = Integer.toHexString(dec);
+                if(hex.length() < 2) hex = "0" + hex;
+                sb.append(hex);
+            } else if (value.equals("")) {
+                sb.append(sourceLine.getMnemonic().getMachineCode());
+            } else {
+                int modeIndex = value.indexOf(',');
+                if (modeIndex == -1) {
+                    errorMessages.add("Instruction requires an addressing mode at line " + sourceLine.getLineNumber() +
+                            ".\n");
+                    errors = true;
+                    continue;
+                }
+                String[] tokens = value.split(",");
+                int operandValue;
+                try {
+                    AddressingMode mode = AddressingMode.valueOf(tokens[1].toUpperCase());
+                    sb.append(sourceLine.getMnemonic().getMachineCode(mode));
+                    sb.append(" ");
+                    if (tokens[0].toUpperCase().startsWith("0X")) {
+                        tokens[0] = tokens[0].substring(2);
+                        if (tokens[0].length() > 4) throw new IllegalArgumentException();
+                        operandValue = Integer.parseInt(tokens[0], 16);
+                    } else {
+                        operandValue = Integer.parseInt(tokens[0]);
+                    }
+                    if (operandValue > Short.MAX_VALUE || operandValue < Short.MIN_VALUE) {
+                        throw new IllegalArgumentException();
+                    }
+                } catch (IllegalArgumentException e) {
+                    if (e.getClass() == NumberFormatException.class) {
+                       Short temp = symbolTable.get(value);
+                       if (temp == null) {
+
+                           errorMessages.add("Error when translating line " + sourceLine.getLineNumber() + " to machine " +
+                                   "code.\n");
+                           errors = true;
+                           continue;
+                       }
+                       operandValue = temp;
+                    } else {
+                        errorMessages.add("Error when translating line " + sourceLine.getLineNumber() + " to machine " +
+                                "code.\n");
+                        errors = true;
+                        continue;
+                    }
+                }
+                String hex = Integer.toHexString(operandValue & 0xFFFF);
+                while (hex.length() < 4) hex = "0" + hex;
+                sb.append(hex, 0, 2);
+                sb.append(" ");
+                sb.append(hex, 2, 4);
+            }
+            sb.append(" ");
+        }
+        if (!errors) machineCode = sb.toString();
+        return !errors;
     }
 }

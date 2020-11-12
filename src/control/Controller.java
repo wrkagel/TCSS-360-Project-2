@@ -105,6 +105,7 @@ public class Controller implements ModelListener, ViewListener {
             case "Save" -> saveSource();
             case "Run Source" -> runSource();
             case "Start Debugging" -> debugSource();
+            case "Assemble" -> assemble();
         }
     }
 
@@ -204,6 +205,15 @@ public class Controller implements ModelListener, ViewListener {
         } else {
             JOptionPane.showMessageDialog(view, assembler.getErrorMessages());
         }
+    }
+
+    private void assemble() {
+        if (assembler.assembleSourceCode(view.getSourceCode())) {
+            view.setObjectCode(assembler.getMachineCode());
+        }
+            StringBuilder sb = new StringBuilder();
+            assembler.getErrorMessages().forEach((i) -> sb.append(i));
+            view.setAsListing(sb.toString());
     }
 
     /**

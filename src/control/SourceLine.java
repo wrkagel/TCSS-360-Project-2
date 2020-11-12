@@ -2,27 +2,25 @@ package control;
 
 public class SourceLine {
 
-    private String symbol;
+    private final String symbol;
 
-    private String mnemonic;
+    private final Mnemonic mnemonic;
 
-    private String value;
+    private final String value;
 
-    private int lineNumber;
+    private final int lineNumber;
 
     public SourceLine(String rawSourceLine, int lineNumber) {
         this.lineNumber = lineNumber;
         rawSourceLine = rawSourceLine.stripLeading();
         int commentIndex = rawSourceLine.indexOf(';');
-        if (commentIndex > 0) {
+        if (commentIndex != -1) {
             rawSourceLine = rawSourceLine.substring(0, commentIndex);
         }
-        int symbolIndex = rawSourceLine.indexOf(';');
-        if (symbolIndex > 7) throw new IllegalArgumentException("Symbol name too long or not at beginning of " +
-                "line at line " + lineNumber + ".\n");
+        int symbolIndex = rawSourceLine.indexOf(':');
         if (symbolIndex != -1) {
-            symbol = rawSourceLine.substring(symbolIndex);
-            rawSourceLine = rawSourceLine.substring(symbolIndex);
+            symbol = rawSourceLine.substring(0, symbolIndex);
+            rawSourceLine = rawSourceLine.substring(symbolIndex + 1);
             rawSourceLine = rawSourceLine.stripLeading();
         } else {
             symbol = "";
@@ -31,12 +29,20 @@ public class SourceLine {
         if (tokens.length > 2) throw new IllegalArgumentException("Incorrect number of arguments at line " +
                 lineNumber + ".\n");
         if (tokens.length == 0 || commentIndex == 0) {
-            mnemonic = "";
+            mnemonic = null;
             value = "";
         } else {
-            mnemonic = tokens[0].toUpperCase();
-            if (rawSourceLine.length() > tokens[0].length()) {
-                value = rawSourceLine.substring(tokens[0].length() + 1);
+            try {
+                if (tokens[0].charAt(0) == '.') {
+                    mnemonic = Mnemonic.valueOf(tokens[0].toUpperCase().substring(1));
+                } else {
+                    mnemonic = Mnemonic.valueOf(tokens[0].toUpperCase());
+                }
+            } catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException(e.getMessage() + " at line " + lineNumber + ".\n");
+            }
+            if (tokens.length == 2) {
+                value = tokens[1];
             } else {
                 value = "";
             }
@@ -47,7 +53,7 @@ public class SourceLine {
         return lineNumber;
     }
 
-    public String getMnemonic() {
+    public Mnemonic getMnemonic() {
         return mnemonic;
     }
 
@@ -61,6 +67,10 @@ public class SourceLine {
 
     @Override
     public String toString() {
-        return mnemonic + " " + value;
+        String str = "";
+        if (!symbol.equals("")) {
+            str = symbol + ": ";
+        }
+        return str + mnemonic + " " + value;
     }
 }

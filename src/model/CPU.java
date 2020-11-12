@@ -159,6 +159,7 @@ class CPU {
             unaryALUOp();
         } else if (opCode < 48) {
             //no operation trap calls
+            //not currently implemented
         } else if (opCode < 64) {
             decimalIO();
         } else if (opCode < 72) {
