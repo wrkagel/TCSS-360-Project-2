@@ -34,11 +34,10 @@ public class Assembler {
     private HashMap<String, Short> symbolTable;
 
     /**
-     * Create and initialize an assembler.
+     * Create and initializes an assembler.
      */
     public Assembler() {
         machineCode = "";
-    //    assemblerListing = "";
         errorMessages = new ArrayList<>();
         symbolTable = new HashMap<>();
     }
@@ -51,12 +50,16 @@ public class Assembler {
      * @return whether the assembly completed without error (true), or had errors (false).
      */
     public boolean assembleSourceCode(String sourceCodeIn) {
+        //Grab and create the raw source lines
         var rawSourceLines = sourceCodeIn.split("\n");
         var sourceLines = new ArrayList<SourceLine>();
+        //Reset error messages and machine code for the new assembly attempt
         errorMessages = new ArrayList<>();
         machineCode = "";
         boolean noErrors = true;
         boolean hasEnd = false;
+        //Turn raw source lines into Source Line objects. Ignore lines that contain no code relevant to the
+        //assembler. Ignore any lines after the .End sentinel.
         for (int i = 0; i < rawSourceLines.length; i++) {
             try {
                 SourceLine sourceLine = new SourceLine(rawSourceLines[i], i);
@@ -127,14 +130,16 @@ public class Assembler {
         StringBuilder sb = new StringBuilder();
         for(SourceLine sourceLine:sourceLines) {
             String value = sourceLine.getValue();
+            //Turns .BYTE pseudoOp into a pair of hex characters that are added to machine code.
             if (sourceLine.getMnemonic() == Mnemonic.BYTE) {
                 int dec = Integer.parseInt(value);
                 String hex = Integer.toHexString(dec);
                 if(hex.length() < 2) hex = "0" + hex;
                 sb.append(hex);
-            } else if (value.equals("")) {
+            } else if (value.equals("")) { //Deal with any unary mnemonics
                 sb.append(sourceLine.getMnemonic().getMachineCode());
-            } else {
+            } else { //Deal with all non-unary mnemonics.
+                //non-mnemonics must have an addressing mode.
                 int modeIndex = value.indexOf(',');
                 if (modeIndex == -1) {
                     errorMessages.add("Instruction requires an addressing mode at line " + sourceLine.getLineNumber() +
@@ -142,12 +147,16 @@ public class Assembler {
                     errors = true;
                     continue;
                 }
+                //Split apart address and addressign mode
                 String[] tokens = value.split(",");
                 int operandValue;
                 try {
+                    //Use AddressingMode Enum from model to more easily create the hex string characters for the
+                    //mnemonic
                     AddressingMode mode = AddressingMode.valueOf(tokens[1].toUpperCase());
                     sb.append(sourceLine.getMnemonic().getMachineCode(mode));
                     sb.append(" ");
+                    //Turn the value into machine code hex characters and add them.
                     if (tokens[0].toUpperCase().startsWith("0X")) {
                         tokens[0] = tokens[0].substring(2);
                         if (tokens[0].length() > 4) throw new IllegalArgumentException();

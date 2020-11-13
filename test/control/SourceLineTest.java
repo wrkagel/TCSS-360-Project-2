@@ -4,6 +4,12 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/*
+TCSS 360 Project #2
+Group 8
+RJ Alabado, Walter Kagel, Taehong Kim
+ */
+
 class SourceLineTest {
 
     private SourceLine sourceLine;

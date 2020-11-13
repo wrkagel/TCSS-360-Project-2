@@ -11,6 +11,7 @@ TCSS 360 Project #2
 Group 8
 RJ Alabado, Walter Kagel, Taehong Kim
  */
+
 /**
  * Test class for the GUI.
  * @author Group 8 Lead:Taehong Kim,

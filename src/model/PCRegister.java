@@ -14,6 +14,11 @@ RJ Alabado, Walter Kagel, Taehong Kim
  */
 class PCRegister extends Register{
 
+    /**
+     * Advances the pc register by n bytes. With the current implementation the pc will loop back to 0 after 0xFFFF.
+     * This could allow for a program to run infinitely.
+     * @param n the number of bytes to advance.
+     */
     void advance(int n) {
         super.setShort((short) (super.getShort() + n));
     }

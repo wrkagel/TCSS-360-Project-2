@@ -6,6 +6,12 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static control.Mnemonic.*;
 
+/*
+TCSS 360 Project #2
+Group 8
+RJ Alabado, Walter Kagel, Taehong Kim
+ */
+
 class MnemonicTest {
 
     private final Mnemonic[] unary = new Mnemonic[] {STOP, MOVSPA, MOVFLGA, NOTA, NOTI, NEGA, NEGI, ASLA, ASLI, ASRA,

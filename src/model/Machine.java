@@ -85,6 +85,9 @@ public class Machine {
         if (listener != null) listener.memoryUpdate(mem.getMemCopy());
     }
 
+    /**
+     * Makes a fresh Memory and CPU for the machine. Adds the listener to the newly created cpu.
+     */
     public void reset() {
         mem = new Memory();
         cpu = new CPU(mem);
