@@ -17,7 +17,7 @@ import java.util.HashMap;
  * Stores the generated text in private fields accessible with getters and will log all errors into an errorText
  * string generated during the assembly attempt.
  * @author Group 8
- * @version 11/08/2020
+ * @version 11/13/2020
  */
 public class Assembler {
 
@@ -34,11 +34,10 @@ public class Assembler {
     private HashMap<String, Short> symbolTable;
 
     /**
-     * Create and initialize an assembler.
+     * Create and initializes an assembler.
      */
     public Assembler() {
         machineCode = "";
-    //    assemblerListing = "";
         errorMessages = new ArrayList<>();
         symbolTable = new HashMap<>();
     }
@@ -51,12 +50,16 @@ public class Assembler {
      * @return whether the assembly completed without error (true), or had errors (false).
      */
     public boolean assembleSourceCode(String sourceCodeIn) {
+        //Grab and create the raw source lines
         var rawSourceLines = sourceCodeIn.split("\n");
         var sourceLines = new ArrayList<SourceLine>();
+        //Reset error messages and machine code for the new assembly attempt
         errorMessages = new ArrayList<>();
         machineCode = "";
         boolean noErrors = true;
         boolean hasEnd = false;
+        //Turn raw source lines into Source Line objects. Ignore lines that contain no code relevant to the
+        //assembler. Ignore any lines after the .End sentinel.
         for (int i = 0; i < rawSourceLines.length; i++) {
             try {
                 SourceLine sourceLine = new SourceLine(rawSourceLines[i], i);
@@ -72,7 +75,7 @@ public class Assembler {
         }
         if(!hasEnd) {
             noErrors = false;
-            errorMessages.add("Source code does not contain the .END sentinel.");
+            errorMessages.add("Source code does not contain the .END sentinel.\n");
         }
         return noErrors &&
                 Formatter.parsePseudoInstructions(sourceLines, errorMessages) &&
@@ -127,14 +130,16 @@ public class Assembler {
         StringBuilder sb = new StringBuilder();
         for(SourceLine sourceLine:sourceLines) {
             String value = sourceLine.getValue();
+            //Turns .BYTE pseudoOp into a pair of hex characters that are added to machine code.
             if (sourceLine.getMnemonic() == Mnemonic.BYTE) {
                 int dec = Integer.parseInt(value);
                 String hex = Integer.toHexString(dec);
                 if(hex.length() < 2) hex = "0" + hex;
-                sb.append(hex);
-            } else if (value.equals("")) {
+                sb.append(hex.toUpperCase());
+            } else if (value.equals("")) { //Deal with any unary mnemonics
                 sb.append(sourceLine.getMnemonic().getMachineCode());
-            } else {
+            } else { //Deal with all non-unary mnemonics.
+                //non-unary mnemonics must have an addressing mode.
                 int modeIndex = value.indexOf(',');
                 if (modeIndex == -1) {
                     errorMessages.add("Instruction requires an addressing mode at line " + sourceLine.getLineNumber() +
@@ -142,15 +147,18 @@ public class Assembler {
                     errors = true;
                     continue;
                 }
+                //Split apart address and addressing mode
                 String[] tokens = value.split(",");
                 int operandValue;
                 try {
+                    //Use AddressingMode Enum from model to more easily create the hex string characters for the
+                    //mnemonic
                     AddressingMode mode = AddressingMode.valueOf(tokens[1].toUpperCase());
                     sb.append(sourceLine.getMnemonic().getMachineCode(mode));
                     sb.append(" ");
+                    //Turn the value into machine code hex characters and add them.
                     if (tokens[0].toUpperCase().startsWith("0X")) {
                         tokens[0] = tokens[0].substring(2);
-                        if (tokens[0].length() > 4) throw new IllegalArgumentException();
                         operandValue = Integer.parseInt(tokens[0], 16);
                     } else {
                         operandValue = Integer.parseInt(tokens[0]);
@@ -162,9 +170,8 @@ public class Assembler {
                     if (e.getClass() == NumberFormatException.class) {
                        Short temp = symbolTable.get(value);
                        if (temp == null) {
-
-                           errorMessages.add("Error when translating line " + sourceLine.getLineNumber() + " to machine " +
-                                   "code.\n");
+                           errorMessages.add("Error when translating line " + sourceLine.getLineNumber() +
+                                   " to machine code.\n");
                            errors = true;
                            continue;
                        }
@@ -176,11 +183,11 @@ public class Assembler {
                         continue;
                     }
                 }
-                String hex = Integer.toHexString(operandValue & 0xFFFF);
-                while (hex.length() < 4) hex = "0" + hex;
-                sb.append(hex, 0, 2);
+                StringBuilder hex = new StringBuilder(Integer.toHexString(operandValue & 0xFFFF));
+                while (hex.length() < 4) hex.insert(0, "0");
+                sb.append(hex.toString().toUpperCase(), 0, 2);
                 sb.append(" ");
-                sb.append(hex, 2, 4);
+                sb.append(hex.toString().toUpperCase(), 2, 4);
             }
             sb.append(" ");
         }

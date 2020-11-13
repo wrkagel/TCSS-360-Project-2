@@ -2,6 +2,18 @@ package control;
 
 import model.AddressingMode;
 
+/*
+TCSS 360 Project #2
+Group 8
+RJ Alabado, Walter Kagel, Taehong Kim
+ */
+
+/**
+ * Contains all the Mnemonics that have been implemented in the current pep8 simulator.
+ * Primarily used for easier generation of machine code.
+ * @author Group 8, Lead: Walter Kagel
+ * @version 11/12/2020
+ */
 public enum Mnemonic {
     STOP, MOVSPA, MOVFLGA, BR, BRLE, BRLT, BREQ, BRNE, BRGE, BRGT, BRV, BRC, CALL, NOTA, NOTI, NEGA, NEGI, ASLA, ASLI,
     ASRA, ASRI, ROLA, ROLI, RORA, RORI, DECI, DECO, STRO, CHARI, CHARO, RET0, RET1, RET2, RET3, RET4, RET5, RET6, RET7,
@@ -9,6 +21,10 @@ public enum Mnemonic {
     STBYTEA, STBYTEI, ASCII, BLOCK, WORD, BYTE, END;
 
 
+    /**
+     * Gets the machine code associated with a unary mnemonic. Throws an error if the instruction is non-unary.
+     * @return the two hexadecimal characters for the unary mnemonic as a String.
+     */
     public String getMachineCode() {
         switch(this) {
             case STOP -> {return "00";}
@@ -81,6 +97,12 @@ public enum Mnemonic {
         }
     }
 
+    /**
+     * Gets the machine code for a non-unary instruction given the addressing mode. Throws an error for a
+     * unary instruction.
+     * @param mode the addressing mode of the non-unary instruction
+     * @return the two hexadecimal characters for the mnemonic as a String.
+     */
     public String getMachineCode(AddressingMode mode) {
         switch(this) {
             case BR -> {
@@ -254,6 +276,11 @@ public enum Mnemonic {
         }
     }
 
+    /**
+     * Simple string method that puts the '.' character back at the beginning of the pseudoOps. Otherwise
+     * just returns the name of the value.
+     * @return
+     */
     @Override
     public String toString() {
         return switch (this) {
@@ -262,7 +289,7 @@ public enum Mnemonic {
             case WORD -> ".WORD";
             case BYTE -> ".BYTE";
             case END -> ".END";
-            default -> this.name();
+            default -> super.toString();
         };
     }
 }

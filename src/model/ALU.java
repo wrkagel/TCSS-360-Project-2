@@ -50,7 +50,7 @@ public class ALU {
 		short returnVal = (short) (value1 + value2);
 		checkNegative(returnVal);
 		checkZero(returnVal);
-		checkOverflow(value1, value2, returnVal);
+		checkAddOverflow(value1, value2, returnVal);
 		checkAddCarry(value1, value2);
 		return returnVal;
 	}
@@ -59,7 +59,7 @@ public class ALU {
 		short returnVal = (short) (value1 - value2);
 		checkNegative(returnVal);
 		checkZero(returnVal);
-		checkOverflow(value1, value2, returnVal);
+		checkSubOverflow(value1, value2, returnVal);
 		checkSubCarry(value1, value2);
 		return returnVal;
 	}
@@ -108,9 +108,13 @@ public class ALU {
 	 * @return rotated value as a short
 	 */
 	public short rotateRight(short value) {
-		final String a = "0000000000000000";
-		final String val = Integer.toBinaryString(value);
 		int j = 0;
+		final String a = "0000000000000000";
+		String val = Integer.toBinaryString(value);
+		if (val.length() > 16) {
+			val = val.substring(val.length() - 16);
+		}
+		
 		StringBuilder sb = new StringBuilder(val);
 
 		if (val.charAt(val.length() - 1) == '1') { // if there's a 1 in least significant bit
@@ -220,10 +224,20 @@ public class ALU {
 	 * @param value1
 	 * @param value2
 	 */
-	private void checkOverflow(short value1, short value2, short returnVal) {
+	private void checkAddOverflow(short value1, short value2, short returnVal) {
 		if ((value1 > 0 && value2 > 0) && (returnVal < 0)) {
 			setOverflowFlag(true);
 		} else if ((value1 < 0 && value2 < 0) && (returnVal > 0)) {
+			setOverflowFlag(true);
+		} else {
+			setOverflowFlag(false);
+		}
+	}
+
+	private void checkSubOverflow(short value1, short value2, short returnVal) {
+		if ((value1 > 0 && value2 < 0) && returnVal < 0) {
+			setOverflowFlag(true);
+		} else if ((value1 < 0 && value2 > 0) && returnVal > 0) {
 			setOverflowFlag(true);
 		} else {
 			setOverflowFlag(false);

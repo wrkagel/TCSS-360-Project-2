@@ -4,6 +4,17 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/*
+TCSS 360 Project #2
+Group 8
+RJ Alabado, Walter Kagel, Taehong Kim
+ */
+
+/**
+ * Simple test class for the SourceLine class.
+ * @author Group 8
+ * @version 11/13/2020
+ */
 class SourceLineTest {
 
     private SourceLine sourceLine;
@@ -18,6 +29,11 @@ class SourceLineTest {
     void getMnemonic() {
         sourceLine = new SourceLine("ADDA 0x3555,d", 0);
         assertEquals(Mnemonic.ADDA, sourceLine.getMnemonic());
+    }
+
+    @Test
+    void invalidMnemonic() {
+        assertThrows(IllegalArgumentException.class, () -> new SourceLine("ADDB 0x3555,d", 0));
     }
 
     @Test
@@ -39,7 +55,7 @@ class SourceLineTest {
     }
 
     @Test
-    void testToManyArguments() {
+    void testTooManyArguments() {
         assertThrows(IllegalArgumentException.class, () ->
                 new SourceLine("num: ADDA 0x3555,i baloney", 10));
     }

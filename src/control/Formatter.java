@@ -2,11 +2,22 @@ package control;
 
 import java.util.ArrayList;
 
+/*
+TCSS 360 Project #2
+Group 8
+RJ Alabado, Walter Kagel, Taehong Kim
+ */
+
+/**
+ * Formats source lines so that they can be used for building the symbol table and then turned into machine code.
+ * @author Group 8
+ * @version 11/12/2020
+ */
 public class Formatter {
 
     /**
-     * Turns pseudo ops into lines that are easier to convert into machine code. Replaces .ASCII, .BLOCK, and .WORD
-     * with equivalent .BYTE lines.
+     * Turns Source Lines with pseudo ops into lines that are easier to convert into machine code.
+     * Replaces .ASCII, .BLOCK, and .WORD with equivalent .BYTE lines.
      * @param sourceLines ArrayList containing the lines of source code with all non-instructions removed.
      * @return false if errors were generated, true otherwise.
      */
@@ -26,6 +37,7 @@ public class Formatter {
                         continue;
                     }
                     sourceLines.remove(i);
+
                     boolean isEscape = false;
                     boolean isFirst = true;
                     char[] chars = value.toCharArray();
@@ -35,7 +47,9 @@ public class Formatter {
                             isEscape = true;
                             continue;
                         }
+                        //Ignore non escaped quotation marks.
                         if (chars[j] == '\"' && !isEscape) continue;
+                        //Deal with escape sequences.
                         if (isEscape) {
                             chars[j] = getEscapeSequence(chars[j]);
                             isEscape = false;
@@ -45,6 +59,7 @@ public class Formatter {
                                 errors = true;
                                 break;
                             }
+                            //Deal with byte literal escape sequence
                             if (chars[j] == 'x') {
                                 try {
                                     String strHex = "" + chars[j + 1] + chars[j + 2];
@@ -62,6 +77,7 @@ public class Formatter {
                         } else {
                             sb.append((byte) chars[j]);
                         }
+                        //Add symbol to first .BYTE so it can be used for symbol table if necessary.
                         if (isFirst && !symbol.equals("")) {
                             isFirst = false;
                             sb.insert(0, symbol + ": ");
@@ -73,7 +89,6 @@ public class Formatter {
                 }
                 //Turns the .BLOCK pseudo-op into a series of .BYTE 00 lines.
                 case BLOCK -> {
-
                     String value = sourceLine.getValue();
                     int lineNumber = sourceLine.getLineNumber();
                     String symbol = sourceLine.getSymbol();
@@ -108,13 +123,14 @@ public class Formatter {
                         errors = true;
                     }
                 }
+                //Turn a WORD pseudoOp into two two .BYTE pseudoOps
                 case WORD -> {
                     String value = sourceLine.getValue();
                     int lineNumber = sourceLine.getLineNumber();
                     String symbol = sourceLine.getSymbol();
                     if (value.equals("")) {
                         errorMessages.add("Incorrect number of arguments for .WORD pseudo-op at line " +
-                                lineNumber + "./n");
+                                lineNumber + ".\n");
                     }
                     int wordValue;
                     try {
@@ -129,16 +145,20 @@ public class Formatter {
                         break;
                     }
                     sourceLines.remove(i);
+                    //Check that value isn't too big or small to fit in a word value (two bytes).
                     if (wordValue > Short.MAX_VALUE || wordValue < Short.MIN_VALUE) {
                         errorMessages.add("Value cannot fit in size of word at line " + lineNumber + ".\n");
                         errors = true;
                         break;
                     }
+                    //Add symbol to first line if there is one.
                     sourceLines.add(i, new SourceLine(symbol + ": .BYTE "  +
                             ((byte) (wordValue >> 8)), lineNumber));
                     i++;
                     sourceLines.add(i, new SourceLine(".BYTE " + ((byte) (wordValue & 0xFF)), lineNumber));
                 }
+                //Checks that the .BYTE pseudoOp doesn't contain any errors and changes any hex values to
+                //decimal for consistency.
                 case BYTE -> {
                     String value = sourceLine.getValue();
                     int lineNumber = sourceLine.getLineNumber();
@@ -165,13 +185,14 @@ public class Formatter {
                         errors = true;
                         break;
                     }
-                    sourceLines.add(i, new SourceLine(".BYTE " + ((byte) (wordValue & 0xFF)), lineNumber));
+                    //Since the byte is always only a single line we always add the symbol.
+                    sourceLines.add(i, new SourceLine(symbol + ": " + ".BYTE " +
+                            ((byte) (wordValue & 0xFF)), lineNumber));
                 }
             }
         }
         return !errors;
     }
-
 
     /**
      * Returns the proper escape sequence for the given character. Returns ' ' if a valid escape sequence is not found.

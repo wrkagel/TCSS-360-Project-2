@@ -200,9 +200,9 @@ class GUITest {
      */
     @Test
     void getSourceCode() {
-        assertEquals("Please type your Souce Code here",gui.getSourceCode());
+        assertEquals("Please type your Source Code here",gui.getSourceCode());
         gui.setSourceCode("");
-        assertNotEquals("Please type your Souce Code here", gui.getSourceCode());
+        assertNotEquals("Please type your Source Code here", gui.getSourceCode());
         assertEquals("",gui.getSourceCode());
     }
     /**

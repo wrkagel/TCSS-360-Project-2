@@ -12,7 +12,7 @@ import control.ModelListener;
  * Holds all of the parts necessary for the pep/8 machine to run. CPU, Memory, and input buffer
  * as well as a listener that it informs when stored values are updated.
  * @author Group 8, Lead: Walter Kagel
- * @version 10/29/2020
+ * @version 11/13/2020
  */
 public class Machine {
 
@@ -47,6 +47,8 @@ public class Machine {
      */
     public void run(boolean isStep) {
         boolean stop;
+        //runCount used to avoid an infinitely running program.
+        int runCount = 0;
         do {
             try {
                 stop = cpu.fetchExecute(isStep);
@@ -54,7 +56,11 @@ public class Machine {
                 listener.errorMessage(e.getMessage());
                 stop = true;
             }
-        } while (!(stop || isStep));
+            runCount++;
+        } while (!(stop || isStep) && runCount < 1500);
+        if (runCount >= 1500) {
+            listener.errorMessage("Exceeded maximum statement execution amount of 1500. Program terminated early.");
+        }
     }
 
     /**
@@ -85,6 +91,9 @@ public class Machine {
         if (listener != null) listener.memoryUpdate(mem.getMemCopy());
     }
 
+    /**
+     * Makes a fresh Memory and CPU for the machine. Adds the listener to the newly created cpu.
+     */
     public void reset() {
         mem = new Memory();
         cpu = new CPU(mem);
