@@ -12,19 +12,24 @@ Group 8
 RJ Alabado, Walter Kagel, Taehong Kim
  */
 
+/**
+ * Simple test class for the Mnemonic Enum.
+ * @author Group 8, Lead: Walter Kagel
+ * @version 11/13/2020
+ */
 class MnemonicTest {
 
     private final Mnemonic[] unary = new Mnemonic[] {STOP, MOVSPA, MOVFLGA, NOTA, NOTI, NEGA, NEGI, ASLA, ASLI, ASRA,
-            ASRI, ROLA, ROLI, RORA, RORI, RET0, RET1, RET2, RET3, RET4, RET5, RET6, RET7, END};
+            ASRI, ROLA, ROLI, RORA, RORI, RET0, RET1, RET2, RET3, RET4, RET5, RET6, RET7};
 
     private final Mnemonic[] nonUnary = new Mnemonic[] {BR, BRLE, BRLT, BREQ, BRNE, BRGE, BRGT, BRV, BRC, CALL, DECI,
             DECO, STRO, CHARI, CHARO, ADDSP, SUBSP, ADDA, ADDI, SUBA, SUBI, ANDA, ANDI, ORA, ORI, CPA, CPI, LDA,
-            LDI, LDBYTEA, LDBYTEI, STA, STI, STBYTEA, STBYTEI, ASCII, BLOCK, WORD, BYTE};
+            LDI, LDBYTEA, LDBYTEI, STA, STI, STBYTEA, STBYTEI};
 
     @Test
     void testGetMachineCodeWithoutAddress() {
         String[] expectedCodeValues = new String[] {"00", "02", "03", "18", "19", "1A", "1B", "1C", "1D", "1E", "1F",
-                "20", "21", "22", "23", "58", "59", "5A", "5B", "5C", "5D", "5E", "5F", ""};
+                "20", "21", "22", "23", "58", "59", "5A", "5B", "5C", "5D", "5E", "5F"};
         for (int i = 0; i < unary.length; i++) {
             assertEquals(expectedCodeValues[i], unary[i].getMachineCode());
         }
@@ -50,7 +55,7 @@ class MnemonicTest {
     @Test
     void testGetMachineCodeWithNonBRAndCALL() {
         String[] expectedValues = {"32", "3A", "42", "4A", "52", "62", "6A", "72", "7A", "82", "8A", "92", "9A", "A2",
-                "AA", "B2", "BA", "C2", "CA", "D2", "DA", "E2", "EA", "F2", "FA", "", "", "", ""};
+                "AA", "B2", "BA", "C2", "CA", "D2", "DA", "E2", "EA", "F2", "FA"};
         for (int i = 0; i < expectedValues.length; i++) {
             Mnemonic mnemonic = nonUnary[i + 10];
             assertEquals(expectedValues[i], mnemonic.getMachineCode(AddressingMode.N));
@@ -78,6 +83,15 @@ class MnemonicTest {
         Mnemonic[] values = Mnemonic.values();
         for (int i = 0; i < testNames.length; i++) {
             assertEquals(values[i], Mnemonic.valueOf(testNames[i]));
+        }
+    }
+
+    @Test
+    void testPseudoOpsReturnBlankString() {
+        Mnemonic[] pseudoOps = new Mnemonic[] {ASCII, BLOCK, WORD, BYTE, END};
+        for (int i = 0; i < pseudoOps.length; i++) {
+            assertEquals("", pseudoOps[i].getMachineCode());
+            assertEquals("", pseudoOps[i].getMachineCode(AddressingMode.I));
         }
     }
 }

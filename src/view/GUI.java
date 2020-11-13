@@ -1109,4 +1109,10 @@ public class GUI extends JFrame implements ActionListener{
         ViewListner = controller;
     }
 
+    /**
+     * Takes the GUI out of debug mode.
+     */
+    public void disableDebug() {
+    }
+
 }

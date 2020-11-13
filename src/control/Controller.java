@@ -10,6 +10,7 @@ import model.Machine;
 import view.GUI;
 
 import javax.swing.*;
+import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -17,7 +18,7 @@ import java.util.regex.Pattern;
  * Controls all communication and updating between the model and view packages. Updates the view when a change
  * in model has occurred. Calls appropriate functions upon a user action on the view.
  * @author Group 8, Walter Kagel
- * @version 11/07/2020
+ * @version 11/13/2020
  */
 public class Controller implements ModelListener, ViewListener {
 
@@ -50,6 +51,7 @@ public class Controller implements ModelListener, ViewListener {
      */
     @Override
     public void registerUpdate(short[] values) {
+        if (values[4] == 0) view.disableDebug();
         view.setRegistersText(values);
     }
 
@@ -104,8 +106,10 @@ public class Controller implements ModelListener, ViewListener {
             case "Debug Object" -> debugObject();
             case "Save" -> saveSource();
             case "Run Source" -> runSource();
-            case "Start Debugging" -> debugSource();
+            case "Debug Source" -> debugSource();
             case "Assemble" -> assemble();
+            case "Single Step" -> singleStep();
+            case "Resume" -> resume();
         }
     }
 
@@ -184,7 +188,6 @@ public class Controller implements ModelListener, ViewListener {
         } catch (Exception e) {
             JOptionPane.showMessageDialog(view, e.getMessage());
         }
-        machine.run(true);
     }
 
     private void runSource() {
@@ -192,9 +195,8 @@ public class Controller implements ModelListener, ViewListener {
         if (success) {
             view.setObjectCode(assembler.getMachineCode());
             runObject();
-        } else {
-            JOptionPane.showMessageDialog(view, assembler.getErrorMessages());
         }
+        view.setAsListing(turnErrorsToString(assembler.getErrorMessages()));
     }
 
     private void debugSource() {
@@ -202,20 +204,23 @@ public class Controller implements ModelListener, ViewListener {
         if (success) {
             view.setObjectCode(assembler.getMachineCode());
             debugObject();
-        } else {
-            JOptionPane.showMessageDialog(view, assembler.getErrorMessages());
         }
+        view.setAsListing(turnErrorsToString(assembler.getErrorMessages()));
     }
 
     private void assemble() {
         if (assembler.assembleSourceCode(view.getSourceCode())) {
             view.setObjectCode(assembler.getMachineCode());
         }
-            StringBuilder sb = new StringBuilder();
-            assembler.getErrorMessages().forEach((i) -> sb.append(i));
-            view.setAsListing(sb.toString());
+        view.setAsListing(turnErrorsToString(assembler.getErrorMessages()));
     }
 
+
+    private String turnErrorsToString(ArrayList<String> errros) {
+        StringBuilder sb = new StringBuilder();
+        assembler.getErrorMessages().forEach((i) -> sb.append(i));
+        return sb.toString();
+    }
     /**
      * Opens a file and reads it into source. Does no checking just reads in a text file.
      */
@@ -223,7 +228,19 @@ public class Controller implements ModelListener, ViewListener {
         FileIO.readFromFile(view);
     }
 
+    /**
+     * Attempts to save the text in the source code text area to a file chosen by the user.
+     */
     private void saveSource() {
         FileIO.writeToFile(view);
+    }
+
+    private void singleStep() {
+        machine.run(true);
+    }
+
+    private void resume() {
+        view.disableDebug();
+        machine.run(false);
     }
 }
