@@ -11,7 +11,6 @@ TCSS 360 Project #2
 Group 8
 RJ Alabado, Walter Kagel, Taehong Kim
  */
-
 /**
  * Test class for the GUI.
  * @author Group 8 Lead:Taehong Kim,
@@ -201,9 +200,9 @@ class GUITest {
      */
     @Test
     void getSourceCode() {
-        assertEquals("Please type your Souce Code here",gui.getSourceCode());
+        assertEquals("Please type your Source Code here",gui.getSourceCode());
         gui.setSourceCode("");
-        assertNotEquals("Please type your Souce Code here", gui.getSourceCode());
+        assertNotEquals("Please type your Source Code here", gui.getSourceCode());
         assertEquals("",gui.getSourceCode());
     }
     /**

@@ -51,7 +51,7 @@ public class Controller implements ModelListener, ViewListener {
      */
     @Override
     public void registerUpdate(short[] values) {
-        if (values[4] == 0) view.disableDebug();
+        if (values[4] == 0) view.releaseButtons();
         view.setRegistersText(values);
     }
 
@@ -240,7 +240,7 @@ public class Controller implements ModelListener, ViewListener {
     }
 
     private void resume() {
-        view.disableDebug();
+        view.releaseButtons();
         machine.run(false);
     }
 }
