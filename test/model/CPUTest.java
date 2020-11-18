@@ -1017,6 +1017,105 @@ class CPUTest implements ModelListener {
         //check N flag once implemented.
     }
 
+    /**
+     * Tests that the indirect addressing mode works
+     */
+    @Test
+    void testAddressingModeN() {
+        mem.setByte((short) 0x1000, (byte) 0x55);
+        mem.setByte((short) 0x1001, (byte) 0x44);
+        mem.setByte((short) 0x5544, (byte) 0x10);
+        mem.setByte((short) 0x5545, (byte) 0x0F);
+        mem.setByte((short) 0, (byte) 0x72);
+        mem.setByte((short) 1, (byte) 0x10);
+        mem.setByte((short) 2, (byte) 0x00);
+        cpu.fetchExecute(true);
+        assertEquals((short) 0x100F, cpuValues.get(0));
+    }
+
+    /**
+     * Tests that the stack relative addressing mode works.
+     */
+    @Test
+    void testAddressingModeS() {
+        mem.setByte((short) 0xFCFF, (byte) 0x50);
+        mem.setByte((short) 0xFD00, (byte) 0x50);
+        mem.setByte((short) 0, (byte) 0x73);
+        mem.setByte((short) 1, (byte) 0x01);
+        mem.setByte((short) 2, (byte) 0x30);
+        cpu.fetchExecute(true);
+        assertEquals((short) 0x5050, cpuValues.get(0));
+    }
+
+    /**
+     * Test that the stack relative deferred addressing mode works.
+     */
+    @Test
+    void testAddressingModeSF() {
+        mem.setByte((short) 0xFCFF, (byte) 0x50);
+        mem.setByte((short) 0xFD00, (byte) 0x50);
+        mem.setByte((short) 0x5050, (byte) 0x23);
+        mem.setByte((short) 0x5051, (byte) 0x34);
+        mem.setByte((short) 0, (byte) 0x74);
+        mem.setByte((short) 1, (byte) 0x01);
+        mem.setByte((short) 2, (byte) 0x30);
+        cpu.fetchExecute(true);
+        assertEquals((short) 0x2334, cpuValues.get(0));
+    }
+
+    /**
+     * Tests that the indexed addressing mode works.
+     */
+    @Test
+    void testAddressingModeX() {
+        mem.setByte((short) 0x4444, (byte) 0x78);
+        mem.setByte((short) 0x4445, (byte) 0x11);
+        mem.setByte((short) 0, (byte) 0x78);
+        mem.setByte((short) 1, (byte) 0x40);
+        mem.setByte((short) 2, (byte) 0x40);
+        mem.setByte((short) 3, (byte) 0x75);
+        mem.setByte((short) 4, (byte) 0x04);
+        mem.setByte((short) 5, (byte) 0x04);
+        cpu.fetchExecute(false);
+        cpu.fetchExecute(true);
+        assertEquals((short) 0x7811, cpuValues.get(0));
+    }
+
+    /**
+     * Test that stack-indexed addressing mode works.
+     */
+    @Test
+    void testAddressingModeSX() {
+        mem.setByte((short) 0xF000, (byte) 0x78);
+        mem.setByte((short) 0xF001, (byte) 0x11);
+        mem.setByte((short) 0, (byte) 0x88);
+        mem.setByte((short) 1, (byte) 0x1C);
+        mem.setByte((short) 2, (byte) 0xDF);
+        mem.setByte((short) 3, (byte) 0x76);
+        mem.setByte((short) 4, (byte) 0x11);
+        mem.setByte((short) 5, (byte) 0x10);
+        cpu.fetchExecute(false);
+        cpu.fetchExecute(true);
+        assertEquals((short) 0x7811, cpuValues.get(0));
+    }
+
+    @Test
+    void testAddressingModeSXF() {
+        mem.setByte((short) 0x8000, (byte) 0x12);
+        mem.setByte((short) 0x8001, (byte) 0x12);
+        mem.setByte((short) 0x0CDF, (byte) 0x77);
+        mem.setByte((short) 0x0CE0, (byte) 0x78);
+        mem.setByte((short) 0, (byte) 0x78);
+        mem.setByte((short) 1, (byte) 0x08);
+        mem.setByte((short) 2, (byte) 0x88);
+        mem.setByte((short) 3, (byte) 0x77);
+        mem.setByte((short) 4, (byte) 0x11);
+        mem.setByte((short) 5, (byte) 0x10);
+        cpu.fetchExecute(false);
+        cpu.fetchExecute(true);
+        assertEquals((short) 0x1212, cpuValues.get(0));
+    }
+
     //Everything past here is implementing the ModelListener, so the test class can get feedback from the CPU.
 
     /**
