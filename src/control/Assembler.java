@@ -33,7 +33,7 @@ public class Assembler {
 	 */
 	private ArrayList<String> errorMessages;
 
-	private HashMap<String, Short> symbolTable;
+	private final HashMap<String, Short> symbolTable;
 
 	/**
 	 * Create and initialize an assembler.
@@ -127,29 +127,29 @@ public class Assembler {
 		short address = 0;
 		boolean noError = true;
 
-		for (int i = 0; i < sourceLines.size(); i++) { // iterates through sourceLines
-			String symbol = sourceLines.get(i).getSymbol();
+		for (SourceLine sourceLine : sourceLines) { // iterates through sourceLines
+			String symbol = sourceLine.getSymbol();
 			if (isValidSymbol(symbol)  // if symbol is valid
 					&& !symbolTable.containsKey(symbol) // if doesn't exist in symbol table
 					&& !symbol.equals("")) { // if symbol isn't blank
 				// if symbol doesn't equal "", adds to symbolTable
-				symbolTable.put(sourceLines.get(i).getSymbol(), address);
+				symbolTable.put(sourceLine.getSymbol(), address);
 			} else {
-				if (sourceLines.get(i).getSymbol().equals("")) {
+				if (sourceLine.getSymbol().equals("")) {
 					// if symbol equals "", skips line, increments address
-				} else if (!isValidSymbol(sourceLines.get(i).getSymbol())) {
+				} else if (!isValidSymbol(sourceLine.getSymbol())) {
 					// error message if symbol isn't valid in general
-					errorMessages.add("Invalid symbol name at line " + sourceLines.get(i).getLineNumber() + ".\n");
+					errorMessages.add("Invalid symbol name at line " + sourceLine.getLineNumber() + ".\n");
 					noError = false;
-				} else if (symbolTable.containsKey(sourceLines.get(i).getSymbol())) {
+				} else if (symbolTable.containsKey(sourceLine.getSymbol())) {
 					// error message if symbol exists already
 					errorMessages.add(
-							"Symbol at line " + sourceLines.get(i).getLineNumber() + " already exists in symbol table.\n");
+							"Symbol at line " + sourceLine.getLineNumber() + " already exists in symbol table.\n");
 					noError = false;
 				}
 				// will return false in event of invalid symbol
 			}
-			address = increment(address, sourceLines.get(i).getMnemonic(), sourceLines.get(i).getValue());
+			address = increment(address, sourceLine.getMnemonic(), sourceLine.getValue());
 		}
 		return noError;
 	}
@@ -178,7 +178,7 @@ public class Assembler {
 	 * @return returns whether symbol is valid or not
 	 */
 	private boolean isValidSymbol(final String a) {
-		if (!a.equals("") && a.length() < 8 && Character.isAlphabetic(a.charAt(1))) {
+		if (!a.equals("") && a.length() < 8 && Character.isAlphabetic(a.charAt(0))) {
 			for (int i = 0; i < a.length(); i++) {
 				if (!Character.isLetterOrDigit(a.charAt(i))) {
 					return false;
@@ -254,12 +254,12 @@ public class Assembler {
 						continue;
 					}
 				}
-				String hex = Integer.toHexString(operandValue & 0xFFFF);
+				StringBuilder hex = new StringBuilder(Integer.toHexString(operandValue & 0xFFFF));
 				while (hex.length() < 4)
-					hex = "0" + hex;
-				sb.append(hex, 0, 2);
+					hex.insert(0, "0");
+				sb.append(hex.toString(), 0, 2);
 				sb.append(" ");
-				sb.append(hex, 2, 4);
+				sb.append(hex.toString(), 2, 4);
 			}
 			sb.append(" ");
 		}

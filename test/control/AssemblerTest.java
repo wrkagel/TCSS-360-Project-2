@@ -86,4 +86,22 @@ class AssemblerTest {
         assertEquals("No enum constant control.Mnemonic.ADDB at line 0.\n",
                 assembler.getErrorMessages().get(0));
     }
+
+    @Test
+    void testSymbolTable() {
+        assembler.assembleSourceCode("BR main,i\nnum: .WORD 2\nmain: ADDA num,d\nSTOP\n.END");
+        assertEquals("04 00 05 00 02 71 00 03 00  ", assembler.getMachineCode());
+    }
+
+    @Test
+    void testInvalidSymbolError() {
+        assembler.assembleSourceCode("7Test: .BYTE 2\nstop\n.END");
+        assertEquals("Invalid symbol name at line 0.\n", assembler.getErrorMessages().get(0));
+    }
+
+    @Test
+    void testRepeatedSymbolError() {
+        assembler.assembleSourceCode("num: .WORD 1\nnum: .WORD 2\n.END");
+        assertEquals("Symbol at line 1 already exists in symbol table.\n", assembler.getErrorMessages().get(0));
+    }
 }
