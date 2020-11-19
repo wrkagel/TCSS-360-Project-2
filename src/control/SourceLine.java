@@ -10,7 +10,7 @@ RJ Alabado, Walter Kagel, Taehong Kim
  * Holds the relevant information for a line of source code. Checks there are not too many arguments for a line of
  * code.
  * @author Group 8, Lead: Walter Kagel
- * @version 11/18/2020
+ * @version 11/19/2020
  */
 public class SourceLine {
 
@@ -59,11 +59,8 @@ public class SourceLine {
         }
         //Split the remaining line (should only be mnemonics and values) by whitespace
         String[] tokens = rawSourceLine.split("\\s");
-        //Throw an error if too many tokens are found
-        if (tokens.length > 2) throw new IllegalArgumentException("Incorrect number of arguments at line " +
-                lineNumber + ".\n");
         //If the remaining line was empty then set everything to blank.
-        if (tokens[0] == "" || tokens.length > 2) {
+        if (tokens[0] == "") {
             mnemonic = null;
             value = "";
         } else {
@@ -77,12 +74,7 @@ public class SourceLine {
             } catch (IllegalArgumentException e) {
                 throw new IllegalArgumentException(e.getMessage() + " at line " + lineNumber + ".\n");
             }
-            //Determine if a value exists and set it if it does
-            if (tokens.length == 2) {
-                value = tokens[1];
-            } else {
-                value = "";
-            }
+            value = rawSourceLine.substring(tokens[0].length()).stripLeading();
         }
     }
 

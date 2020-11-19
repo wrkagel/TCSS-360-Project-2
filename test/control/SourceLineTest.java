@@ -13,7 +13,7 @@ RJ Alabado, Walter Kagel, Taehong Kim
 /**
  * Simple test class for the SourceLine class.
  * @author Group 8
- * @version 11/13/2020
+ * @version 11/19/2020
  */
 class SourceLineTest {
 
@@ -52,12 +52,6 @@ class SourceLineTest {
     void testToString() {
         sourceLine = new SourceLine("num: ADDA 0x3555,i", 10);
         assertEquals("num: ADDA 0x3555,i", sourceLine.toString());
-    }
-
-    @Test
-    void testTooManyArguments() {
-        assertThrows(IllegalArgumentException.class, () ->
-                new SourceLine("num: ADDA 0x3555,i baloney", 10));
     }
 
     @Test

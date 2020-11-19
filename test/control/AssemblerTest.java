@@ -15,7 +15,7 @@ RJ Alabado, Walter Kagel, Taehong Kim
 /**
  * Test class for the assembler.
  * @author Group 8
- * 11/13/2020
+ * 11/19/2020
  */
 class AssemblerTest {
 
@@ -60,23 +60,24 @@ class AssemblerTest {
     }
 
     @Test
-    void testGetErrorMessagesIntegerParseError() {
+    void testGetErrorMessagesSymbolNotFound() {
         assembler.assembleSourceCode("ADDA test,i\n.end");
-        assertEquals("Error when translating line 0 to machine code.\n",
+        assertEquals("Symbol not found error at line 0.\n",
                 assembler.getErrorMessages().get(0));
     }
 
     @Test
     void testGetErrorMessagesValueTooLarge() {
         assembler.assembleSourceCode("SUBI 0xFFFFF,n\n.end");
-        assertEquals("Error when translating line 0 to machine code.\n",
+        assertEquals("Error when translating line 0 to machine code. Value out of bounds\n",
                 assembler.getErrorMessages().get(0));
     }
 
     @Test
     void testGetErrorMessagesSourceLineError() {
         assembler.assembleSourceCode("ADDA 0x30,i test\n.end");
-        assertEquals("Incorrect number of arguments at line 0.\n",
+        assertEquals("Error when translating line 0 to machine code. " +
+                        "No enum constant model.AddressingMode.I TEST\n",
                 assembler.getErrorMessages().get(0));
     }
 

@@ -227,29 +227,26 @@ public class Assembler {
 					sb.append(" ");
 					if (tokens[0].toUpperCase().startsWith("0X")) {
 						tokens[0] = tokens[0].substring(2);
-						if (tokens[0].length() > 4)
-							throw new IllegalArgumentException();
 						operandValue = Integer.parseInt(tokens[0], 16);
 					} else {
 						operandValue = Integer.parseInt(tokens[0]);
 					}
 					if (operandValue > Short.MAX_VALUE || operandValue < Short.MIN_VALUE) {
-						throw new IllegalArgumentException();
+						throw new IllegalArgumentException("Value out of bounds");
 					}
 				} catch (IllegalArgumentException e) {
 					if (e.getClass() == NumberFormatException.class) {
 						Short temp = symbolTable.get(tokens[0]);
 						if (temp == null) {
 
-							errorMessages.add("Error when translating line " + sourceLine.getLineNumber()
-									+ " to machine " + "code.\n");
+							errorMessages.add("Symbol not found error at line " + sourceLine.getLineNumber() + ".\n");
 							errors = true;
 							continue;
 						}
 						operandValue = temp;
 					} else {
 						errorMessages.add("Error when translating line " + sourceLine.getLineNumber() + " to machine "
-								+ "code.\n");
+								+ "code. "+ e.getMessage() + "\n");
 						errors = true;
 						continue;
 					}

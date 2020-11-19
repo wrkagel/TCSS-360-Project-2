@@ -351,6 +351,7 @@ class CPU {
                 input = input.substring(newLine + 1);
             } else {
                 number = input;
+                input = "";
             }
             short oper;
             try {
