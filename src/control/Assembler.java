@@ -227,12 +227,15 @@ public class Assembler {
 					sb.append(" ");
 					if (tokens[0].toUpperCase().startsWith("0X")) {
 						tokens[0] = tokens[0].substring(2);
-						operandValue = Integer.parseInt(tokens[0], 16);
+						operandValue = Integer.parseUnsignedInt(tokens[0], 16);
+						if (operandValue > 0xFFFF || operandValue < 0) {
+							throw new IllegalArgumentException("Value out of bounds");
+						}
 					} else {
 						operandValue = Integer.parseInt(tokens[0]);
-					}
-					if (operandValue > Short.MAX_VALUE || operandValue < Short.MIN_VALUE) {
-						throw new IllegalArgumentException("Value out of bounds");
+						if (operandValue > Short.MAX_VALUE || operandValue < Short.MIN_VALUE) {
+							throw new IllegalArgumentException("Value out of bounds");
+						}
 					}
 				} catch (IllegalArgumentException e) {
 					if (e.getClass() == NumberFormatException.class) {

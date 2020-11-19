@@ -520,7 +520,7 @@ class CPU {
             }
         }
         if (checkFlags[0]) negativeFlag = alu.getNegativeFlag();
-        if (checkFlags[1]) zeroFlag = alu.getZeroFlag();
+        if (checkFlags[1]) zeroFlag = alu.getZeroFlag(); //Always true, but left for consistency of code.
         if (checkFlags[2]) overflowFlag = alu.getOverflowFlag();
         if (checkFlags[3]) carryFlag = alu.getCarryFlag();
         if(listener != null && isStep) updateListener();
