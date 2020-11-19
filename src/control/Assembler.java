@@ -79,7 +79,7 @@ public class Assembler {
 		}
 		if (!hasEnd) {
 			noErrors = false;
-			errorMessages.add("Source code does not contain the .END sentinel.");
+			errorMessages.add("Source code does not contain the .END sentinel.\n");
 		}
 		return noErrors && Formatter.parsePseudoInstructions(sourceLines, errorMessages)
 				&& buildSymbolTable(sourceLines) && buildMachineCode(sourceLines);
@@ -257,9 +257,9 @@ public class Assembler {
 				StringBuilder hex = new StringBuilder(Integer.toHexString(operandValue & 0xFFFF));
 				while (hex.length() < 4)
 					hex.insert(0, "0");
-				sb.append(hex.toString(), 0, 2);
+				sb.append(hex.toString().toUpperCase(), 0, 2);
 				sb.append(" ");
-				sb.append(hex.toString(), 2, 4);
+				sb.append(hex.toString().toUpperCase(), 2, 4);
 			}
 			sb.append(" ");
 		}
