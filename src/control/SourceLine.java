@@ -10,7 +10,7 @@ RJ Alabado, Walter Kagel, Taehong Kim
  * Holds the relevant information for a line of source code. Checks there are not too many arguments for a line of
  * code.
  * @author Group 8, Lead: Walter Kagel
- * @version 11/12/2020
+ * @version 11/18/2020
  */
 public class SourceLine {
 
@@ -63,7 +63,7 @@ public class SourceLine {
         if (tokens.length > 2) throw new IllegalArgumentException("Incorrect number of arguments at line " +
                 lineNumber + ".\n");
         //If the remaining line was empty then set everything to blank.
-        if (tokens.length == 0 || commentIndex == 0) {
+        if (tokens[0] == "" || tokens.length > 2) {
             mnemonic = null;
             value = "";
         } else {

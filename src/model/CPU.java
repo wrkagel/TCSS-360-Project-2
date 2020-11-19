@@ -12,7 +12,7 @@ import control.ModelListener;
  * Processes the instructions stored in memory by performing the fetch-execute cycle for a single instruction.
  * Contains all pep/8 internal registers.
  * @author Group 8, Lead: Walter Kagel
- * @version 11/13/2020
+ * @version 11/18/2020
  */
 class CPU {
 
@@ -344,9 +344,17 @@ class CPU {
             if (mode == AddressingMode.I)
                 throw new IllegalArgumentException("Illegal addressing mode for decimal input.");
             if (input.length() == 0) input = listener.getInput();
+            int newLine = input.indexOf('\n');
+            String number;
+            if (newLine != -1) {
+                number = input.substring(0, newLine);
+                input = input.substring(newLine + 1);
+            } else {
+                number = input;
+            }
             short oper;
             try {
-                oper = Short.parseShort(input);
+                oper = Short.parseShort(number);
             } catch (NumberFormatException e) {
                 throw new IllegalArgumentException("Input cannot be read as a decimal word.");
             }
