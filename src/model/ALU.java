@@ -11,7 +11,7 @@ RJ Alabado, Walter Kagel, Taehong Kim
  * simulator. Stores flags based on the most recent operation.
  * 
  * @author Group 8, Lead: RJ Alabado
- * @version 11/03/2020
+ * @version 11/19/2020
  */
 public class ALU {
 
@@ -55,6 +55,14 @@ public class ALU {
 		return returnVal;
 	}
 
+	/**
+	 * Takes in two short values and returns their subtraction. Sets flags based on
+	 * result.
+	 * 
+	 * @param value1
+	 * @param value2
+	 * @return
+	 */
 	public short sub(short value1, short value2) {
 		short returnVal = (short) (value1 - value2);
 		checkNegative(returnVal);
@@ -64,6 +72,14 @@ public class ALU {
 		return returnVal;
 	}
 
+	/**
+	 * Takes in two short values and returns the and result. Sets flags based on
+	 * result.
+	 * 
+	 * @param value1
+	 * @param value2
+	 * @return
+	 */
 	public short and(short value1, short value2) {
 		short returnVal = (short) (value1 & value2);
 		checkNegative(returnVal);
@@ -71,6 +87,14 @@ public class ALU {
 		return returnVal;
 	}
 
+	/**
+	 * Takes in two short values and returns the or result. Sets flags based on
+	 * result.
+	 * 
+	 * @param value1
+	 * @param value2
+	 * @return
+	 */
 	public short or(short value1, short value2) {
 		short returnVal = (short) (value1 | value2);
 		checkNegative(returnVal);
@@ -78,6 +102,13 @@ public class ALU {
 		return returnVal;
 	}
 
+	/**
+	 * Takes in a short value and returns the arthimetic shift left result. Sets
+	 * flags based on result.
+	 * 
+	 * @param value
+	 * @return
+	 */
 	public short arithShiftLeft(short value) {
 		short returnVal = (short) ((value << rotateVal));
 		checkNegative(returnVal);
@@ -87,6 +118,13 @@ public class ALU {
 		return returnVal;
 	}
 
+	/**
+	 * Takes in a short value and returns the arithmetic shift right result. Sets
+	 * flags based on result.
+	 * 
+	 * @param value
+	 * @return
+	 */
 	public short arithShiftRight(short value) {
 		short returnVal = (short) ((value >> rotateVal));
 		checkNegative(returnVal);
@@ -95,6 +133,13 @@ public class ALU {
 		return returnVal;
 	}
 
+	/**
+	 * Takes in a short value and rotates the leftmost bit to the the rightmost bit
+	 * using the carry bit as an intermediary.
+	 * 
+	 * @param value
+	 * @return
+	 */
 	public short rotateLeft(short value) {
 		short returnVal = (short) (Integer.rotateLeft(value, rotateVal));
 		checkRotateLeftCarry(value);
@@ -114,7 +159,7 @@ public class ALU {
 		if (val.length() > 16) {
 			val = val.substring(val.length() - 16);
 		}
-		
+
 		StringBuilder sb = new StringBuilder(val);
 
 		if (val.charAt(val.length() - 1) == '1') { // if there's a 1 in least significant bit
@@ -143,6 +188,13 @@ public class ALU {
 		return returnVal;
 	}
 
+	/**
+	 * Takes in a short value and returns the not result. Sets flags based on
+	 * result.
+	 * 
+	 * @param value
+	 * @return
+	 */
 	public short not(short value) {
 		short returnVal = (short) (~value);
 		checkNegative(returnVal);
@@ -150,6 +202,13 @@ public class ALU {
 		return returnVal;
 	}
 
+	/**
+	 * Takes in a short value and returns the negation result. Sets flags based on
+	 * result.
+	 * 
+	 * @param value
+	 * @return
+	 */
 	public short negation(short value) {
 		short returnVal;
 		if (value == Short.MIN_VALUE) {
@@ -166,34 +225,66 @@ public class ALU {
 	// ---------------------------------------------------------------------------------------------
 	// Getters and Setters
 
+	/**
+	 * @return returns negative flag.
+	 */
 	public boolean getNegativeFlag() {
 		return negativeFlag;
 	}
 
+	/**
+	 * @return returns zero flag.
+	 */
 	public boolean getZeroFlag() {
 		return zeroFlag;
 	}
 
+	/**
+	 * @return returns overflow flag.
+	 */
 	public boolean getOverflowFlag() {
 		return overflowFlag;
 	}
 
+	/**
+	 * @return returns carry flag
+	 */
 	public boolean getCarryFlag() {
 		return carryFlag;
 	}
 
+	/**
+	 * Sets a value of the parameter to the negative flag.
+	 * 
+	 * @param val
+	 */
 	private void setNegativeFlag(boolean val) {
 		negativeFlag = val;
 	}
 
+	/**
+	 * Sets a value of the parameter to the zero flag.
+	 * 
+	 * @param val
+	 */
 	private void setZeroFlag(boolean val) {
 		zeroFlag = val;
 	}
 
+	/**
+	 * Sets a value of the parameter to the overflow flag.
+	 * 
+	 * @param val
+	 */
 	private void setOverflowFlag(boolean val) {
 		overflowFlag = val;
 	}
 
+	/**
+	 * Sets a value of the parameter to the carry flag.
+	 * 
+	 * @param val
+	 */
 	private void setCarryFlag(boolean val) {
 		carryFlag = val;
 	}
@@ -201,6 +292,11 @@ public class ALU {
 	// ---------------------------------------------------------------------------------------------
 	// Check methods for setting NZVC values
 
+	/**
+	 * Checks if parameter value is negative, sets negative flag.
+	 * 
+	 * @param value
+	 */
 	private void checkNegative(short value) {
 		if (value < 0) {
 			setNegativeFlag(true);
@@ -209,6 +305,11 @@ public class ALU {
 		}
 	}
 
+	/**
+	 * Checks if parameter value is zero, sets zero flag.
+	 * 
+	 * @param value
+	 */
 	private void checkZero(short value) {
 		if (value == 0) {
 			setZeroFlag(true);
@@ -218,11 +319,12 @@ public class ALU {
 	}
 
 	/**
-	 * This is the original I made, only works for methods with value1 and value2 I
-	 * do hope this is correct
+	 * Checks overflow value for addition. Compares all parameters to produce a true
+	 * or false result for overflow flag.
 	 * 
 	 * @param value1
 	 * @param value2
+	 * @param returnVal
 	 */
 	private void checkAddOverflow(short value1, short value2, short returnVal) {
 		if ((value1 > 0 && value2 > 0) && (returnVal < 0)) {
@@ -234,6 +336,14 @@ public class ALU {
 		}
 	}
 
+	/**
+	 * Checks overflow value for subtraction. Compares all parameters to produce a
+	 * true or false result for overflow flag.
+	 * 
+	 * @param value1
+	 * @param value2
+	 * @param returnVal
+	 */
 	private void checkSubOverflow(short value1, short value2, short returnVal) {
 		if ((value1 > 0 && value2 < 0) && returnVal < 0) {
 			setOverflowFlag(true);
@@ -244,6 +354,13 @@ public class ALU {
 		}
 	}
 
+	/**
+	 * Checks overflow value for arithmetic shift left. Compares all parameters
+	 * accordingly to produce a true or false result for overflow flag.
+	 * 
+	 * @param value
+	 * @param returnVal
+	 */
 	private void checkArithLeftOverflow(short value, short returnVal) {
 		if ((value > 0) && (returnVal < 0)) {
 			setOverflowFlag(true);
@@ -254,6 +371,13 @@ public class ALU {
 		}
 	}
 
+	/**
+	 * Checks carry value for addition. Compares all parameters accordingly to
+	 * produce a true or false result for carry flag.
+	 * 
+	 * @param value1
+	 * @param value2
+	 */
 	private void checkAddCarry(short value1, short value2) {
 		if ((value1 > 0 && value2 > 0) && ((value1 + value2) < 0)) {
 			setCarryFlag(true);
@@ -262,6 +386,13 @@ public class ALU {
 		}
 	}
 
+	/**
+	 * Checks carry value for subtraction. Compares all parameters accordingly to
+	 * produce a true or false result for carry flag.
+	 * 
+	 * @param value1
+	 * @param value2
+	 */
 	private void checkSubCarry(short value1, short value2) {
 		if (Short.compareUnsigned(value1, value2) >= 0) {
 			setCarryFlag(true);
@@ -270,6 +401,12 @@ public class ALU {
 		}
 	}
 
+	/**
+	 * Checks carry value for arithmetic left carry. Compares uses parameter
+	 * accordingly to produce a true or false result for carry flag.
+	 * 
+	 * @param value
+	 */
 	private void checkArithLeftCarry(short value) {
 		if (((value & 0x8000) >>> 15) == 1) {
 			setCarryFlag(true);
@@ -277,7 +414,13 @@ public class ALU {
 			setCarryFlag(false);
 		}
 	}
-	
+
+	/**
+	 * Checks carry value for arithmetic right carry. Compares parameter accordingly
+	 * to produce a true or false result for carry flag.
+	 * 
+	 * @param value
+	 */
 	private void checkArithRightCarry(short value) {
 		if ((value & 0x1) == 1) {
 			setCarryFlag(true);
@@ -285,7 +428,13 @@ public class ALU {
 			setCarryFlag(false);
 		}
 	}
-	
+
+	/**
+	 * Checks carry value for rotate left carry. Compares parameter accordingly to
+	 * produce a true or false result for carry flag.
+	 * 
+	 * @param value
+	 */
 	private void checkRotateLeftCarry(short value) {
 		if (Integer.toBinaryString(value).charAt(0) == '1') {
 			setCarryFlag(true);
@@ -294,6 +443,12 @@ public class ALU {
 		}
 	}
 
+	/**
+	 * Checks carry value for rotate right carry. Compares parameter accordingly to
+	 * produce a true or false result for carry flag.
+	 * 
+	 * @param value
+	 */
 	private void checkRotateRightCarry(short value) {
 		if ((Integer.toBinaryString(value)).charAt(Integer.toBinaryString(value).length() - 1) == '1') {
 			setCarryFlag(true);
@@ -301,5 +456,4 @@ public class ALU {
 			setCarryFlag(false);
 		}
 	}
-
 }
